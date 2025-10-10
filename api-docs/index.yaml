@@ -1,0 +1,2716 @@
+openapi: 3.0.3
+info:
+  title: Example API
+  version: 1.0.0
+servers:
+  - url: http://127.0.0.1:8000/api
+
+paths:
+#  /external/v1/ask:
+#    post:
+#      tags: [ External ]
+#      operationId: externalAsk
+#      summary: Получить ответ RAG через внешний API
+#      description: >
+#        Возвращает текстовый ответ на вопрос по проекту. Эндпоинт предназначен для интеграции
+#        внешних систем и использует те же кеши ответов, что и основное приложение.
+#      x-lg-middleware:
+#        - auth:sanctum
+#        - check.available.requests
+#      requestBody:
+#        required: true
+#        content:
+#          application/json:
+#            schema:
+#              $ref: '#/components/schemas/ExternalAskRequest'
+#      responses:
+#        '200':
+#          description: OK — ответ получен.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/ExternalAskResponse'
+#        '400':
+#          description: Validation Error — входные данные не прошли валидацию.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/ValidationError'
+#        '401':
+#          description: Unauthorized — требуется аутентификация по токену Sanctum.
+#        '403':
+#          description: Forbidden — токен не имеет доступа к проекту.
+#        '404':
+#          description: Not Found — проект не найден.
+#        '429':
+#          description: Too Many Requests — исчерпан лимит запросов проекта.
+#        '500':
+#          description: Internal Server Error — непредвиденная ошибка на сервере.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/Error'
+#      security:
+#        - bearerAuth: []
+#  /webhooks/yc/object-storage:
+#    post:
+#      tags: [ Webhooks ]
+#      operationId: ycOsWebhook
+#      x-lg-middleware:
+#        - auth:sanctum
+#      summary: Вебхук события Yandex Object Storage (создание/удаление объекта)
+#      description: >
+#        Принимает батч событий от триггера Object Storage (Yandex Cloud). Триггер шлёт массив `messages`,
+#        где каждое сообщение содержит `event_metadata` и `details`.
+#        Поддерживаемые типы: `yandex.cloud.events.storage.ObjectCreate`,
+#        `yandex.cloud.events.storage.ObjectDelete`.
+#      requestBody:
+#        required: true
+#        content:
+#          application/json:
+#            schema:
+#              $ref: '#/components/schemas/YcOsTriggerBatch'
+#            examples:
+#              create:
+#                summary: Пример события создания
+#                value:
+#                  messages:
+#                    - event_metadata:
+#                        event_id: "6c5be1ea-c072-4cf6-ade8-6bb0b749d64a"
+#                        event_type: "yandex.cloud.events.storage.ObjectCreate"
+#                        created_at: "2025-08-21T16:17:01.845165033Z"
+#                        tracing_context:
+#                          trace_id: null
+#                          span_id: null
+#                          parent_span_id: null
+#                        cloud_id: "b1g5pqeu306nekdicu6b"
+#                        folder_id: "b1gn622bfm691ud9vna5"
+#                      details:
+#                        bucket_id: "rag-files"
+#                        object_id: "projects/1/1_1__________________________.csv"
+#      responses:
+#        '204':
+#          description: No Content — событие принято и обработано.
+#        '400':
+#          description: Bad Request — некорректное тело запроса.
+#        '401':
+#          description: Unauthorized — требуется аутентификация.
+#        '500':
+#          description: Internal Server Error — непредвиденная ошибка на сервере.
+#      security:
+#        - bearerAuth: [ ]
+#
+#  /projects/{id}/image:
+#    post:
+#      tags: [ Projects ]
+#      operationId: uploadProjectImage
+#      summary: Загрузить изображение проекта
+#      description: >
+#        Обновляет изображение проекта. Доступно только владельцу проекта.
+#      x-lg-policy:
+#        action: update
+#        model: '\App\Models\Project::class'
+#      parameters:
+#        - name: id
+#          in: path
+#          required: true
+#          description: Идентификатор проекта
+#          schema:
+#            type: integer
+#          example: 1
+#      requestBody:
+#        required: true
+#        description: Изображение для загрузки.
+#        content:
+#          multipart/form-data:
+#            schema:
+#              $ref: '#/components/schemas/UploadProjectImage'
+#      responses:
+#        '204':
+#          description: No Content — изображение обновлено.
+#        '400':
+#          description: Validation Error — входные данные не прошли валидацию.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/ValidationError'
+#        '404':
+#          description: Not Found — проект не найден или не принадлежит пользователю.
+#        '419':
+#          description: CSRF Token Mismatch — отсутствует или неверный `X-XSRF-TOKEN`/cookie.
+#        '500':
+#          description: Internal Server Error — непредвиденная ошибка на сервере.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/Error'
+#      security:
+#        - cookieAuth: [ ]
+#          xsrfHeader: [ ]
+#
+#  /projects/{id}/prompt:
+#    post:
+#      tags: [ Projects ]
+#      operationId: setProjectPrompt
+#      summary: Обновить промпт проекта
+#      description: >
+#        Устанавливает новый системный промпт для проекта и сохраняет запись в истории.
+#      x-lg-policy:
+#        action: update
+#        model: '\App\Models\Project::class'
+#        param: id
+#      parameters:
+#        - name: id
+#          in: path
+#          required: true
+#          description: Идентификатор проекта
+#          schema:
+#            type: integer
+#          example: 1
+#      requestBody:
+#        required: true
+#        content:
+#          application/json:
+#            schema:
+#              $ref: '#/components/schemas/SetProjectPromptRequest'
+#      responses:
+#        '200':
+#          description: OK — промпт сохранён.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/ProjectPromptHistoryItem'
+#        '400':
+#          description: Validation Error — входные данные не прошли валидацию.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/ValidationError'
+#        '404':
+#          description: Not Found — проект не найден.
+#        '419':
+#          description: CSRF Token Mismatch — отсутствует или неверный `X-XSRF-TOKEN`/cookie.
+#        '500':
+#          description: Internal Server Error — непредвиденная ошибка на сервере.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/Error'
+#      security:
+#        - cookieAuth: [ ]
+#          xsrfHeader: [ ]
+#
+#  /projects/{id}/prompts:
+#    get:
+#      tags: [ Projects ]
+#      operationId: listProjectPrompts
+#      summary: Получить историю промптов проекта
+#      description: >
+#        Возвращает последние сохранённые промпты проекта в порядке от новых к старым.
+#      x-lg-policy:
+#        action: get
+#        model: '\App\Models\Project::class'
+#        param: id
+#      parameters:
+#        - name: id
+#          in: path
+#          required: true
+#          description: Идентификатор проекта
+#          schema:
+#            type: integer
+#          example: 1
+#      responses:
+#        '200':
+#          description: OK — история промптов получена.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/ListProjectPromptsResponse'
+#        '404':
+#          description: Not Found — проект не найден.
+#        '419':
+#          description: CSRF Token Mismatch — отсутствует или неверный `X-XSRF-TOKEN`/cookie.
+#        '500':
+#          description: Internal Server Error — непредвиденная ошибка на сервере.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/Error'
+#      security:
+#        - cookieAuth: [ ]
+#          xsrfHeader: [ ]
+#
+#  /projects/{projectID}/google-drive/folders/import:
+#    post:
+#      tags: [ GoogleDrive ]
+#      operationId: queueGoogleDriveFolderImport
+#      summary: Поставить импорт папки Google Drive в очередь
+#      description: >
+#        Ставит задачу импорта файлов из указанной папки Google Drive в очередь обработки.
+#        Файлы будут загружены в проект асинхронно.
+#      x-lg-policy:
+#        action: update
+#        model: '\App\Models\Project::class'
+#        param: projectID
+#      parameters:
+#        - name: projectID
+#          in: path
+#          required: true
+#          description: Идентификатор проекта
+#          schema:
+#            type: integer
+#          example: 1
+#      requestBody:
+#        required: true
+#        content:
+#          application/json:
+#            schema:
+#              $ref: '#/components/schemas/QueueGoogleDriveFolderImportRequest'
+#      responses:
+#        '204':
+#          description: No Content — импорт папки поставлен в очередь.
+#        '400':
+#          description: Validation Error — входные данные не прошли валидацию.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/ValidationError'
+#        '404':
+#          description: Not Found — проект не найден или не принадлежит пользователю.
+#        '419':
+#          description: CSRF Token Mismatch — отсутствует или неверный `X-XSRF-TOKEN`/cookie.
+#        '500':
+#          description: Internal Server Error — непредвиденная ошибка на сервере.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/Error'
+#      security:
+#        - cookieAuth: [ ]
+#          xsrfHeader: [ ]
+#
+#
+#  /request_form:
+#    post:
+#      tags: [ RequestForm ]
+#      operationId: saveRequestForm
+#      summary: Сохраняем форму о желание пользоваться сервисом.
+#      description: >
+#        Сохраняем форму о желание пользоваться сервисом.
+#      requestBody:
+#        required: true
+#        content:
+#          application/json:
+#            schema:
+#              type: object
+#              required:
+#                - agreement
+#                - phone
+#                - name
+#                - company
+#              properties:
+#                name:
+#                  type: string
+#                  nullable: true
+#                  description: Имя пользователя
+#                  example: Иван Иванов
+#                position:
+#                  type: string
+#                  nullable: true
+#                  description: Должность
+#                  example: Руководитель отдела маркетинга
+#                phone:
+#                  type: string
+#                  nullable: true
+#                  description: Телефон пользователя в любом формате
+#                  example: "+7 (999) 123-45-67"
+#                email:
+#                  type: string
+#                  nullable: true
+#                  format: email
+#                  description: Email пользователя
+#                  example: ivan@example.com
+#                company:
+#                  type: string
+#                  nullable: true
+#                  description: Название компании
+#                  example: ООО "Технологии Будущего"
+#                purpose:
+#                  type: string
+#                  nullable: true
+#                  description: Цели использования BrainAI
+#                  example: >
+#                    Планируем использовать BrainAI для автоматизации обработки входящих заявок и анализа данных.
+#                agreement:
+#                  type: boolean
+#                  description: Согласие на обработку персональных данных
+#                  example: true
+#                tariff:
+#                  type: string
+#                  description: Желаемый тариф. Любая строка.
+#                  example: bussiness
+#                  nullable: true
+#      responses:
+#        '201':
+#          description: >
+#            Форма успешно сохранена.
+#        '500':
+#          description: Internal Server Error — непредвиденная ошибка на сервере.
+#      security: [ ]  # доступен без аутентификации
+#
+#  /sanctum/csrf-cookie:
+#    get:
+#      tags: [ Auth ]
+#      operationId: getCsrfCookie
+#      summary: Инициализировать CSRF-cookie для SPA
+#      description: >
+#        Выдаёт браузеру cookie `XSRF-TOKEN` (не HttpOnly) и сессионную cookie
+#        `laravel_session` (HttpOnly). После этого SPA должна отправлять заголовок
+#        `X-XSRF-TOKEN` (значение = URL-decoded `XSRF-TOKEN`) на stateful-запросах.
+#        Некоторые HTTP-клиенты (Axios, Angular HttpClient) делают это автоматически.
+#      responses:
+#        '204':
+#          description: >
+#            No Content — cookie успешно установлены (проверьте заголовки Set-Cookie).
+#        '419':
+#          description: CSRF Token Mismatch — если сессия/домен настроены неверно.
+#      security: [ ]  # доступен без аутентификации
+#
+#  /auth/users:
+#    post:
+#      tags: [ Auth ]
+#      operationId: registerUser
+#      summary: Регистрация нового пользователя (Sanctum SPA)
+#      description: >
+#        Создаёт учётную запись и аутентифицирует пользователя сессией.
+#        Авторизация держится на cookie-сессии.
+#        Требуется заранее вызвать `/sanctum/csrf-cookie`, затем прислать
+#        заголовок `X-XSRF-TOKEN`.
+#      requestBody:
+#        required: true
+#        description: Тело запроса с учётными данными.
+#        content:
+#          application/json:
+#            schema:
+#              $ref: '#/components/schemas/RegisterUser'
+#            examples:
+#              valid:
+#                summary: Корректный пример
+#                value:
+#                  name: "new_user_01"
+#                  password: "Secret123"
+#                  access_code: "secret-code"
+#      responses:
+#        '201':
+#          description: Created — пользователь создан и аутентифицирован сессией.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/RegisterResponse'
+#              examples:
+#                created:
+#                  summary: Успешная регистрация
+#                  value:
+#                    user:
+#                      id: "c7f0b0f0-9d2e-4c3c-8b1f-7a2a2e2f1c1a"
+#                      name: "new_user_01"
+#        '400':
+#          description: Validation Error — входные данные не прошли валидацию.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/ValidationError'
+#        '419':
+#          description: CSRF Token Mismatch — отсутствует или неверный `X-XSRF-TOKEN`/cookie.
+#        '500':
+#          description: Internal Server Error — непредвиденная ошибка на сервере.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/Error'
+#      security:
+#        - xsrfHeader: [ ]
+#
+#  /auth/login:
+#    post:
+#      tags: [ Auth ]
+#      operationId: loginUser
+#      x-lg-middleware:
+#        - web
+#      summary: Вход пользователя (Sanctum SPA)
+#      description: >
+#        Аутентифицирует существующего пользователя и устанавливает cookie-сессию.
+#        Авторизация держится на cookie-сессии (stateful).
+#        Перед вызовом необходимо инициализировать CSRF-cookie запросом `/sanctum/csrf-cookie`,
+#        затем отправлять заголовок `X-XSRF-TOKEN` (значение = URL-decoded cookie `XSRF-TOKEN`).
+#      requestBody:
+#        required: true
+#        description: Учетные данные пользователя.
+#        content:
+#          application/json:
+#            schema:
+#              $ref: '#/components/schemas/LoginUser'
+#            examples:
+#              valid:
+#                summary: Корректные данные
+#                value:
+#                  name: "existing_user_01"
+#                  password: "Secret123"
+#      responses:
+#        '200':
+#          description: OK — пользователь успешно аутентифицирован, cookie-сессия установлена.
+#        '400':
+#          description: Validation Error — входные данные не прошли валидацию.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/ValidationError'
+#              examples:
+#                bad:
+#                  value:
+#                    errors:
+#                      - field: name
+#                        message: "Имя обязательно."
+#                      - field: password
+#                        message: "Пароль обязателен."
+#        '419':
+#          description: CSRF Token Mismatch — отсутствует или неверный `X-XSRF-TOKEN`/cookie.
+#        '429':
+#          description: Too Many Requests — превышен лимит попыток входа (если включён троттлинг).
+#        '500':
+#          description: Internal Server Error — непредвиденная ошибка на сервере.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/Error'
+#      security:
+#        - xsrfHeader: [ ]
+#  /auth/logout:
+#    post:
+#      tags: [ Auth ]
+#      operationId: logoutUser
+#      summary: Выход пользователя (Sanctum SPA)
+#      description: >
+#        Разлогинивает текущего аутентифицированного пользователя в режиме Sanctum SPA.
+#
+#        Для работы используется **cookie-сессия (stateful)**, поэтому:
+#        1. Пользователь должен быть уже залогинен через `/auth/login` (или аналогичный роут).
+#        2. Запрос должен содержать действующую cookie сессии и CSRF-токен.
+#        3. Перед первым запросом к защищённым роутам (включая logout) рекомендуется инициализировать CSRF-cookie через `/sanctum/csrf-cookie`.
+#
+#        CSRF-токен передаётся в заголовке `X-XSRF-TOKEN` (значение = URL-decoded cookie `XSRF-TOKEN`).
+#      responses:
+#        '204':
+#          description: No Content — пользователь успешно разлогинен, сессия инвалидирована, CSRF-токен сброшен.
+#        '401':
+#          description: Unauthorized — пользователь не аутентифицирован или сессия недействительна.
+#        '419':
+#          description: CSRF Token Mismatch — отсутствует или неверный `X-XSRF-TOKEN`/cookie.
+#        '429':
+#          description: Too Many Requests — превышен лимит запросов (если включён троттлинг).
+#        '500':
+#          description: Internal Server Error — непредвиденная ошибка на сервере.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/Error'
+#      security:
+#        - cookieAuth: [ ]
+#          xsrfHeader: [ ]
+#
+#  /auth/me:
+#    get:
+#      tags: [ Auth ]
+#      operationId: getCurrentUser
+#      summary: Получить данные текущего пользователя (Sanctum SPA)
+#      description: >
+#        Возвращает информацию о текущем аутентифицированном пользователе.
+#        Требует действующую cookie-сессию и CSRF-токен.
+#      responses:
+#        '200':
+#          description: OK — данные пользователя получены.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/User'
+#        '401':
+#          description: Unauthorized — пользователь не аутентифицирован или сессия недействительна.
+#        '419':
+#          description: CSRF Token Mismatch — отсутствует или неверный `X-XSRF-TOKEN`/cookie.
+#        '500':
+#          description: Internal Server Error — непредвиденная ошибка на сервере.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/Error'
+#      security:
+#        - cookieAuth: [ ]
+#          xsrfHeader: [ ]
+#
+#  /projects/{projectID}/groups:
+#    get:
+#      tags: [ Groups ]
+#      operationId: listProjectGroups
+#      summary: Получить группы проекта
+#      description: >
+#        Возвращает группы, к которым привязан указанный проект. Доступно владельцам
+#        и пользователям с правами редактирования.
+#      parameters:
+#        - name: projectID
+#          in: path
+#          required: true
+#          description: Идентификатор проекта
+#          schema:
+#            type: integer
+#          example: 1
+#      responses:
+#        '200':
+#          description: OK — группы найдены.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/ListProjectGroupsResponse'
+#        '403':
+#          description: Forbidden — нет доступа.
+#        '404':
+#          description: Not Found — проект не найден.
+#        '419':
+#          description: CSRF Token Mismatch — отсутствует или неверный `X-XSRF-TOKEN`/cookie.
+#        '500':
+#          description: Internal Server Error — непредвиденная ошибка на сервере.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/Error'
+#      security:
+#        - cookieAuth: [ ]
+#          xsrfHeader: [ ]
+#
+#  /projects/members/join:
+#    post:
+#      tags: [ Projects ]
+#      operationId: joinProjectByAccessCode
+#      summary: Присоединить пользователя к проекту по коду доступа
+#      description: >
+#        Находит проект по коду доступа и присоединяет к нему текущего пользователя с ролью участника.
+#      requestBody:
+#        required: true
+#        content:
+#          application/json:
+#            schema:
+#              $ref: '#/components/schemas/JoinProjectByAccessCodeRequest'
+#            examples:
+#              valid:
+#                summary: Корректный код доступа проекта
+#                value:
+#                  access_code: "PROJ-ACCESS-123"
+#      responses:
+#        '200':
+#          description: OK — пользователь присоединён к проекту.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/Project'
+#        '400':
+#          description: Validation Error — код доступа не прошёл проверку.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/ValidationError'
+#        '403':
+#          description: Forbidden — нет доступа.
+#        '404':
+#          description: Not Found — проект не найден.
+#        '409':
+#          description: Conflict — пользователь уже привязан к проекту.
+#        '419':
+#          description: CSRF Token Mismatch — отсутствует или неверный `X-XSRF-TOKEN`/cookie.
+#        '500':
+#          description: Internal Server Error — непредвиденная ошибка на сервере.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/Error'
+#      security:
+#        - cookieAuth: [ ]
+#          xsrfHeader: [ ]
+#
+#  /groups:
+#    post:
+#      tags: [ Groups ]
+#      operationId: createGroup
+#      summary: Создать группу
+#      description: >
+#        Создаёт новую группу для текущего аутентифицированного пользователя. Код доступа
+#        генерируется автоматически и возвращается в ответе.
+#      requestBody:
+#        required: true
+#        content:
+#          application/json:
+#            schema:
+#              $ref: '#/components/schemas/CreateGroupRequest'
+#            examples:
+#              valid:
+#                summary: Минимально необходимое тело
+#                value:
+#                  name: "Команда маркетинга"
+#      responses:
+#        '201':
+#          description: Created — группа создана.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/CreateGroupResponse'
+#        '400':
+#          description: Validation Error — входные данные не прошли валидацию.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/ValidationError'
+#        '419':
+#          description: CSRF Token Mismatch — отсутствует или неверный `X-XSRF-TOKEN`/cookie.
+#        '500':
+#          description: Internal Server Error — непредвиденная ошибка на сервере.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/Error'
+#      security:
+#        - cookieAuth: [ ]
+#          xsrfHeader: [ ]
+#
+#  /groups/{groupID}/projects/{projectID}:
+#    post:
+#      tags: [ Groups ]
+#      operationId: attachProjectToGroup
+#      summary: Привязать проект к группе
+#      description: >
+#        Привязывает проект к группе. Доступно только владельцу группы и пользователям,
+#        имеющим права на редактирование проекта.
+#      parameters:
+#        - name: groupID
+#          in: path
+#          required: true
+#          description: Идентификатор группы
+#          schema:
+#            type: integer
+#          example: 10
+#        - name: projectID
+#          in: path
+#          required: true
+#          description: Идентификатор проекта
+#          schema:
+#            type: integer
+#          example: 5
+#      responses:
+#        '204':
+#          description: No Content — проект привязан к группе.
+#        '403':
+#          description: Forbidden — нет доступа.
+#        '404':
+#          description: Not Found — группа или проект не найдены.
+#        '419':
+#          description: CSRF Token Mismatch — отсутствует или неверный `X-XSRF-TOKEN`/cookie.
+#        '500':
+#          description: Internal Server Error — непредвиденная ошибка на сервере.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/Error'
+#      security:
+#        - cookieAuth: [ ]
+#          xsrfHeader: [ ]
+#    delete:
+#      tags: [ Groups ]
+#      operationId: detachProjectFromGroup
+#      summary: Отвязать проект от группы
+#      description: >
+#        Отвязывает проект от группы и отзывает доступ участников, если других связей с проектом не осталось.
+#      parameters:
+#        - name: groupID
+#          in: path
+#          required: true
+#          description: Идентификатор группы
+#          schema:
+#            type: integer
+#          example: 10
+#        - name: projectID
+#          in: path
+#          required: true
+#          description: Идентификатор проекта
+#          schema:
+#            type: integer
+#          example: 5
+#      responses:
+#        '204':
+#          description: No Content — проект отвязан от группы.
+#        '403':
+#          description: Forbidden — нет доступа.
+#        '404':
+#          description: Not Found — группа или проект не найдены.
+#        '419':
+#          description: CSRF Token Mismatch — отсутствует или неверный `X-XSRF-TOKEN`/cookie.
+#        '500':
+#          description: Internal Server Error — непредвиденная ошибка на сервере.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/Error'
+#      security:
+#        - cookieAuth: [ ]
+#          xsrfHeader: [ ]
+#
+#  /groups/join:
+#    post:
+#      tags: [ Groups ]
+#      operationId: attachGroupsToProjects
+#      summary: Привязать группы к проектам
+#      description: >
+#        Привязывает указанные группы к выбранным проектам текущего пользователя и синхронизирует участников групп с проектами.
+#      requestBody:
+#        required: true
+#        content:
+#          application/json:
+#            schema:
+#              $ref: '#/components/schemas/AttachGroupsToProjectsRequest'
+#      responses:
+#        '200':
+#          description: OK — группы привязаны к проектам.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/AttachGroupsToProjectsResponse'
+#        '400':
+#          description: Validation Error — входные данные не прошли валидацию.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/ValidationError'
+#        '403':
+#          description: Forbidden — нет доступа.
+#        '404':
+#          description: Not Found — группа или проект не найдены.
+#        '419':
+#          description: CSRF Token Mismatch — отсутствует или неверный `X-XSRF-TOKEN`/cookie.
+#        '500':
+#          description: Internal Server Error — непредвиденная ошибка на сервере.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/Error'
+#      security:
+#        - cookieAuth: [ ]
+#          xsrfHeader: [ ]
+#
+#  /groups/{groupID}/members/{userID}:
+#    delete:
+#      tags: [ Groups ]
+#      operationId: removeGroupMember
+#      summary: Удалить участника группы
+#      description: >
+#        Удаляет пользователя из группы и отзывает его права в рамках этой группы.
+#      parameters:
+#        - name: groupID
+#          in: path
+#          required: true
+#          description: Идентификатор группы
+#          schema:
+#            type: integer
+#          example: 10
+#        - name: userID
+#          in: path
+#          required: true
+#          description: Идентификатор пользователя
+#          schema:
+#            type: string
+#            format: uuid
+#          example: "b1a2c3d4-e5f6-7890-ab12-cd34ef56ab78"
+#      responses:
+#        '204':
+#          description: No Content — пользователь удалён из группы.
+#        '403':
+#          description: Forbidden — нет доступа.
+#        '404':
+#          description: Not Found — группа или пользователь не найдены.
+#        '419':
+#          description: CSRF Token Mismatch — отсутствует или неверный `X-XSRF-TOKEN`/cookie.
+#        '500':
+#          description: Internal Server Error — непредвиденная ошибка на сервере.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/Error'
+#      security:
+#        - cookieAuth: [ ]
+#          xsrfHeader: [ ]
+#
+#  /groups/members/join:
+#    post:
+#      tags: [ Groups ]
+#      operationId: joinGroupMemberByAccessCode
+#      summary: Присоединить пользователя к группе по коду доступа
+#      description: >
+#        Находит группу по коду доступа и присоединяет текущего пользователя с ролью участника.
+#      requestBody:
+#        required: true
+#        content:
+#          application/json:
+#            schema:
+#              $ref: '#/components/schemas/JoinGroupMemberByAccessCodeRequest'
+#            examples:
+#              valid:
+#                summary: Корректный код доступа группы
+#                value:
+#                  access_code: "TEAM-ACCESS-123"
+#      responses:
+#        '200':
+#          description: OK — пользователь присоединён к группе.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/JoinGroupMemberResponse'
+#        '400':
+#          description: Validation Error — код доступа не прошёл проверку.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/ValidationError'
+#        '403':
+#          description: Forbidden — нет доступа.
+#        '404':
+#          description: Not Found — группа не найдена.
+#        '409':
+#          description: Conflict — пользователь уже состоит в группе.
+#        '419':
+#          description: CSRF Token Mismatch — отсутствует или неверный `X-XSRF-TOKEN`/cookie.
+#        '500':
+#          description: Internal Server Error — непредвиденная ошибка на сервере.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/Error'
+#      security:
+#        - cookieAuth: [ ]
+#          xsrfHeader: [ ]
+#
+#  /projects:
+#    get:
+#      tags: [ Projects ]
+#      operationId: listProjects
+#      summary: Получить список проектов
+#      description: >
+#        Возвращает список проектов текущего аутентифицированного пользователя.
+#      responses:
+#        '200':
+#          description: OK — список проектов получен.
+#          content:
+#            application/json:
+#              schema:
+#                type: object
+#                properties:
+#                  projects:
+#                    type: array
+#                    items:
+#                      $ref: '#/components/schemas/Project'
+#        '419':
+#          description: CSRF Token Mismatch — отсутствует или неверный `X-XSRF-TOKEN`/cookie.
+#        '500':
+#          description: Internal Server Error — непредвиденная ошибка на сервере.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/Error'
+#      security:
+#        - cookieAuth: [ ]
+#          xsrfHeader: [ ]
+#
+#    post:
+#      tags: [ Projects ]
+#      operationId: createProject
+#      summary: Создать проект
+#      description: >
+#        Создаёт новый проект для текущего аутентифицированного пользователя (по cookie-сессии Sanctum).
+#        `user_id` определяется на стороне сервера из текущей сессии и в теле запроса не передаётся.
+#      x-lg-policy:
+#        action: create
+#        model: '\App\Models\Project::class'
+#      requestBody:
+#        required: true
+#        description: Данные для создания проекта.
+#        content:
+#          application/json:
+#            schema:
+#              $ref: '#/components/schemas/CreateProject'
+#            examples:
+#              valid:
+#                summary: Минимально необходимое тело
+#                value:
+#                  name: "Мой первый проект"
+#      responses:
+#        '201':
+#          description: Created — проект создан.
+#          headers:
+#            Location:
+#              description: URL созданного ресурса.
+#              schema:
+#                type: string
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/Project'
+#              examples:
+#                created:
+#                  summary: Успешное создание
+#                  value:
+#                    id: 1
+#                    name: "Мой первый проект"
+#                    user_id: 1
+#                    max_requests: 0
+#                    requests_made: 0
+#                    available_requests: 0
+#                    access_code: "ABC1234"
+#                    active_index_id: 1
+#        '400':
+#          description: Validation Error — входные данные не прошли валидацию.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/ValidationError'
+#        '419':
+#          description: CSRF Token Mismatch — отсутствует или неверный `X-XSRF-TOKEN`/cookie.
+#        '500':
+#          description: Internal Server Error — непредвиденная ошибка на сервере.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/Error'
+#      security:
+#        - cookieAuth: [ ]
+#          xsrfHeader: [ ]
+#
+#  /projects/{id}:
+#    get:
+#      tags: [ Projects ]
+#      operationId: getProject
+#      summary: Получить проект по ID
+#      description: >
+#        Возвращает проект по идентификатору. Доступно любому пользователю проекта.
+#      parameters:
+#        - name: id
+#          in: path
+#          required: true
+#          description: Идентификатор проекта
+#          schema:
+#            type: integer
+#          example: 1
+#      x-lg-policy:
+#        action: get
+#        model: '\App\Models\Project::class'
+#      responses:
+#        '200':
+#          description: OK — проект найден.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/ProjectWithFilesResponse'
+#        '403':
+#          description: Forbidden — нет доступа.
+#        '404':
+#          description: Not Found — проект не найден.
+#        '419':
+#          description: CSRF Token Mismatch — отсутствует или неверный `X-XSRF-TOKEN`/cookie.
+#        '500':
+#          description: Internal Server Error — непредвиденная ошибка на сервере.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/Error'
+#      security:
+#        - cookieAuth: [ ]
+#          xsrfHeader: [ ]
+#    post:
+#      tags: [ Projects ]
+#      operationId: updateProject
+#      summary: Обновить проект
+#      description: >
+#        Частично обновляет указанный проект. Передавайте только те поля, которые нужно изменить.
+#        Доступен только владельцу проекта (проверяется на сервере).
+#      x-lg-policy:
+#        action: update
+#        model: '\App\Models\Project::class'
+#      parameters:
+#        - name: id
+#          in: path
+#          required: true
+#          description: Идентификатор проекта
+#          schema:
+#            type: integer
+#          example: 1
+#      requestBody:
+#        required: true
+#        description: Поля для обновления проекта.
+#        content:
+#          application/json:
+#            schema:
+#              $ref: '#/components/schemas/UpdateProject'
+#
+#      responses:
+#        '204':
+#          description: No Content — проект обновлён.
+#        '400':
+#          description: Validation Error — входные данные не прошли валидацию.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/ValidationError'
+#        '404':
+#          description: Not Found — проект не найден или не принадлежит пользователю.
+#        '419':
+#          description: CSRF Token Mismatch — отсутствует или неверный `X-XSRF-TOKEN`/cookie.
+#        '500':
+#          description: Internal Server Error — непредвиденная ошибка на сервере.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/Error'
+#      security:
+#        - cookieAuth: [ ]
+#          xsrfHeader: [ ]
+#
+#    delete:
+#      tags: [ Projects ]
+#      operationId: deleteProject
+#      summary: Удалить проект
+#      description: >
+#        Удаляет проект по идентификатору. Доступно только владельцу проекта.
+#      x-lg-policy:
+#        action: delete
+#        model: '\App\Models\Project::class'
+#      parameters:
+#        - name: id
+#          in: path
+#          required: true
+#          description: Идентификатор проекта
+#          schema:
+#            type: integer
+#          example: 1
+#      responses:
+#        '204':
+#          description: No Content — проект удалён.
+#        '404':
+#          description: Not Found — проект не найден или не принадлежит пользователю.
+#        '419':
+#          description: CSRF Token Mismatch — отсутствует или неверный `X-XSRF-TOKEN`/cookie.
+#        '500':
+#          description: Internal Server Error — непредвиденная ошибка на сервере.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/Error'
+#      security:
+#        - cookieAuth: [ ]
+#          xsrfHeader: [ ]
+#
+#  /rag/files:
+#    get:
+#      tags: [ RagFiles ]
+#      operationId: getFileLinkAndHits
+#      summary: Получить ссылку на файл и хиты
+#      description: >-
+#        Возвращает pre-signed ссылку на файл и хиты сообщения. Если файл не найден, возвращает 404.
+#        Пустой массив `hits` не является ошибкой.
+#      parameters:
+#        - name: fileVersionID
+#          in: query
+#          required: true
+#          schema:
+#            type: integer
+#          description: ID версии файла
+#        - name: messageID
+#          in: query
+#          required: true
+#          schema:
+#            type: integer
+#          description: ID сообщения треда
+#      responses:
+#        '200':
+#          description: OK — ссылка выдана.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/GetRagFileResponse'
+#        '403':
+#          description: Forbidden — нет доступа.
+#        '404':
+#          description: Not Found — версия файла не найдены.
+#        '419':
+#          description: CSRF Token Mismatch — отсутствует или неверный `X-XSRF-TOKEN`/cookie.
+#        '500':
+#          description: Internal Server Error — непредвиденная ошибка на сервере.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/Error'
+#      security:
+#        - cookieAuth: [ ]
+#          xsrfHeader: [ ]
+#
+#  /uploads/sign:
+#    post:
+#      tags: [ Uploads ]
+#      operationId: signUploads
+#      summary: Выдать pre-signed POST policy для загрузки файлов.
+#      description: >
+#        Возвращает массив pre-signed POST (policy) для прямой загрузки файлов в S3-совместимое хранилище.
+#        Сервер проверяет квоты пользователя, нормализует ключи (`key`) и возвращает `action` (url) и `fields` для HTML FormData.
+#      requestBody:
+#        required: true
+#        content:
+#          application/json:
+#            schema:
+#              $ref: '#/components/schemas/SignUploadsRequest'
+#            examples:
+#              post:
+#                summary: Запрос ссылок POST (policy) c ограничением размера на стороне S3
+#                value:
+#                  project_id: 1
+#                  files:
+#                    - name: "pashis.doc"
+#                      size: 345678
+#                      content_type: "image/msword"
+#                    - name: "doc.pdf"
+#                      size: 1234567
+#                      content_type: "application/pdf"
+#      responses:
+#        '200':
+#          description: OK — выданы ссылки для загрузки.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/SignUploadsResponse'
+#              examples:
+#                sample:
+#                  summary: Ответ для набора файлов
+#                  value:
+#                    uploads:
+#                      - key: "projects/u123/ab12-avatar.jpg"
+#                        url: "https://storage.yandexcloud.net/bucket/"
+#                        fields:
+#                          key: "projects/u123/ab12-avatar.jpg"
+#                          policy: "eyJleHBpcmF0aW9uIjoi..."
+#                          x-amz-signature: "..."
+#                      - key: "projects/u123/7f2a-doc.pdf"
+#                        url: "https://storage.yandexcloud.net/bucket/"
+#                        fields:
+#                          key: "projects/u123/7f2a-doc.pdf"
+#                          policy: "eyJleHBpcmF0aW9uIjoi..."
+#                          x-amz-signature: "..."
+#        '400':
+#          description: Validation Error — входные данные не прошли валидацию.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/ValidationError'
+#        '403':
+#          description: Forbidden — нет доступа.
+#        '419':
+#          description: CSRF Token Mismatch — отсутствует или неверный `X-XSRF-TOKEN`/cookie.
+#        '500':
+#          description: Internal Server Error — непредвиденная ошибка на сервере.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/Error'
+#      security:
+#        - cookieAuth: [ ]
+#          xsrfHeader: [ ]
+#
+#  /uploads/complete:
+#    post:
+#      tags: [ Uploads ]
+#      operationId: completeUploads
+#      summary: Финализация загрузок — фиксация факта загрузки в системе
+#      description: >
+#        После успешной загрузки файла в S3 (ответ `204 No Content`) фронт отправляет
+#        сведения о файле в бэкенд для фиксации факта загрузки. Передаются данные
+#        бакета, ключа, проекта, пользователя и параметры файла.
+#      requestBody:
+#        required: true
+#        content:
+#          application/json:
+#            schema:
+#              $ref: '#/components/schemas/UploadCompleteRequest'
+#            examples:
+#              ok:
+#                value:
+#                  bucket: "main"
+#                  key: "projects/u123/7f2a-report.pdf"
+#                  project_id: 1
+#                  user_id: "user-1"
+#                  size_bytes: 1234567
+#                  content_type: "application/pdf"
+#                  original_name: "report.pdf"
+#                  etag: "\"6f5902ac237024bdd0c176cb93063dc4\""
+#      responses:
+#        '204':
+#          description: No Content — данные зафиксированы.
+#        '400':
+#          description: Validation Error — входные данные не прошли валидацию.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/ValidationError'
+#        '403':
+#          description: Forbidden — нет доступа.
+#        '404':
+#          description: Not Found — указанный объект отсутствует в хранилище.
+#        '419':
+#          description: CSRF Token Mismatch — отсутствует или неверный `X-XSRF-TOKEN`/cookie.
+#        '500':
+#          description: Internal Server Error — непредвиденная ошибка на сервере.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/Error'
+#      security:
+#        - cookieAuth: [ ]
+#          xsrfHeader: [ ]
+#
+#  /uploads/download:
+#    post:
+#      tags: [ Uploads ]
+#      operationId: downloadUpload
+#      summary: Выдать временную ссылку для скачивания файла.
+#      description: >
+#        Возвращает pre-signed URL для скачивания версии файла проекта по её ID из S3-совместимого хранилища.
+#      requestBody:
+#        required: true
+#        content:
+#          application/json:
+#            schema:
+#              type: object
+#              required: [ file_version_id ]
+#              properties:
+#                file_version_id:
+#                  type: integer
+#                  description: ID версии файла проекта.
+#                  example: 42
+#      responses:
+#        '200':
+#          description: OK — ссылка для скачивания выдана.
+#          content:
+#            application/json:
+#              schema:
+#                type: object
+#                properties:
+#                  url:
+#                    type: string
+#                    format: uri
+#                    description: Временная ссылка для скачивания файла.
+#                    example: "https://storage.yandexcloud.net/bucket/projects/u123/7f2a-report.pdf?X-Amz-Signature=..."
+#        '400':
+#          description: Validation Error — входные данные не прошли валидацию.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/ValidationError'
+#        '403':
+#          description: Forbidden — нет доступа.
+#        '404':
+#          description: Not Found — указанный объект отсутствует.
+#        '419':
+#          description: CSRF Token Mismatch — отсутствует или неверный `X-XSRF-TOKEN`/cookie.
+#        '500':
+#          description: Internal Server Error — непредвиденная ошибка на сервере.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/Error'
+#      security:
+#        - cookieAuth: [ ]
+#          xsrfHeader: [ ]
+#
+#
+#
+#  /uploads:
+#    delete:
+#      tags: [ Uploads ]
+#      operationId: deleteUploads
+#      summary: Удалить версии загруженных файлов.
+#      description: >
+#        Удаляет версии файлов по их идентификаторам.
+#      requestBody:
+#        required: true
+#        content:
+#          application/json:
+#            schema:
+#              $ref: '#/components/schemas/DeleteUploadsRequest'
+#            examples:
+#              delete:
+#                summary: Список версий файлов для удаления
+#                value:
+#                  file_version_ids: [ 1, 2, 3 ]
+#      responses:
+#        '204':
+#          description: No Content — файлы помечены на удаление.
+#        '403':
+#          description: Forbidden — нет доступа к проекту файла.
+#        '404':
+#          description: Not Found — версия файла отсутствует.
+#        '419':
+#          description: CSRF Token Mismatch — отсутствует или неверный `X-XSRF-TOKEN`/cookie.
+#        '500':
+#          description: Internal Server Error — непредвиденная ошибка на сервере.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/Error'
+#      security:
+#        - cookieAuth: [ ]
+#          xsrfHeader: [ ]
+#
+#  /uploads/formats:
+#    get:
+#      tags: [ Uploads ]
+#      operationId: getAllowedFormats
+#      summary: Получить разрешённые форматы файлов.
+#      description: >
+#        Возвращает список форматов файлов, разрешённых для загрузки.
+#      responses:
+#        '200':
+#          description: OK — список разрешённых форматов.
+#          content:
+#            application/json:
+#              schema:
+#                type: object
+#                required: [ formats ]
+#                properties:
+#                  formats:
+#                    type: array
+#                    items:
+#                      type: object
+#                      required: [ mime, extension ]
+#                      properties:
+#                        mime:
+#                          type: string
+#                          example: 'application/pdf'
+#                        extension:
+#                          type: string
+#                          example: '.pdf'
+#        '419':
+#          description: CSRF Token Mismatch — отсутствует или неверный `X-XSRF-TOKEN`/cookie.
+#        '500':
+#          description: Internal Server Error — непредвиденная ошибка на сервере.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/Error'
+#      security:
+#        - cookieAuth: [ ]
+#          xsrfHeader: [ ]
+#
+#  /projects/{projectID}/threads:
+#    get:
+#      tags: [ Threads ]
+#      operationId: listThreads
+#      summary: Получить список тредов
+#      description: >
+#        Возвращает список тредов активного проекта текущего пользователя.
+#      x-lg-policy:
+#        action: get
+#        model: '\App\Models\Project::class'
+#        param: projectID
+#      parameters:
+#        - name: projectID
+#          in: path
+#          required: true
+#          description: ID проекта
+#          schema:
+#            type: integer
+#          example: 1
+#      responses:
+#        '200':
+#          description: OK — список тредов получен.
+#          content:
+#            application/json:
+#              schema:
+#                type: object
+#                properties:
+#                  threads:
+#                    type: array
+#                    items:
+#                      $ref: '#/components/schemas/Thread'
+#        '419':
+#          description: CSRF Token Mismatch — отсутствует или неверный `X-XSRF-TOKEN`/cookie.
+#        '500':
+#          description: Internal Server Error — непредвиденная ошибка на сервере.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/Error'
+#      security:
+#        - cookieAuth: [ ]
+#          xsrfHeader: [ ]
+#
+#  /projects/{projectID}/threads/start:
+#    post:
+#      tags: [ Threads ]
+#      operationId: startThread
+#      summary: Создать тред и получить ответ
+#      description: >
+#        Создаёт новый тред и генерирует ответ RAG одним запросом.
+#      x-lg-policy:
+#        action: update
+#        model: '\App\Models\Project::class'
+#        param: projectID
+#      parameters:
+#        - name: projectID
+#          in: path
+#          required: true
+#          description: ID проекта
+#          schema:
+#            type: integer
+#          example: 1
+#      requestBody:
+#        required: true
+#        content:
+#          application/json:
+#            schema:
+#              $ref: '#/components/schemas/StartThreadRequest'
+#      responses:
+#        '201':
+#          description: Created — тред создан и ответ получен.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/StartThreadResponse'
+#        '400':
+#          description: Validation Error — входные данные не прошли валидацию.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/ValidationError'
+#        '419':
+#          description: CSRF Token Mismatch — отсутствует или неверный `X-XSRF-TOKEN`/cookie.
+#        '500':
+#          description: Internal Server Error — непредвиденная ошибка на сервере.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/Error'
+#      security:
+#        - cookieAuth: [ ]
+#          xsrfHeader: [ ]
+#
+#  /threads/{threadID}:
+#    get:
+#      tags: [ Threads ]
+#      operationId: getThread
+#      summary: Получить тред и его сообщения
+#      description: >
+#        Возвращает тред и все его сообщения в порядке `sequence`.
+#      x-lg-policy:
+#        action: get
+#        model: '\App\Models\Thread::class'
+#        param: threadID
+#      parameters:
+#        - name: threadID
+#          in: path
+#          required: true
+#          description: ID треда
+#          schema:
+#            type: integer
+#          example: 1
+#      responses:
+#        '200':
+#          description: OK — тред найден.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/ThreadResponse'
+#        '404':
+#          description: Not Found — тред не найден.
+#        '419':
+#          description: CSRF Token Mismatch — отсутствует или неверный `X-XSRF-TOKEN`/cookie.
+#        '500':
+#          description: Internal Server Error — непредвиденная ошибка на сервере.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/Error'
+#      security:
+#        - cookieAuth: [ ]
+#          xsrfHeader: [ ]
+#
+#  /threads/{threadID}/ask:
+#    post:
+#      tags: [ Threads ]
+#      operationId: askThread
+#      summary: Сгенерировать ответ для треда
+#      description: >
+#        Отправляет сообщение пользователя и существующие сообщения треда в RAG и возвращает ответ.
+#      x-lg-policy:
+#        action: update
+#        model: '\App\Models\Thread::class'
+#        param: threadID
+#      parameters:
+#        - name: threadID
+#          in: path
+#          required: true
+#          description: ID треда
+#          schema:
+#            type: integer
+#          example: 1
+#      requestBody:
+#        required: true
+#        content:
+#          application/json:
+#            schema:
+#              $ref: '#/components/schemas/AskThreadRequest'
+#      responses:
+#        '200':
+#          description: OK — ответ получен.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/RagResponse'
+#        '404':
+#          description: Not Found — тред не найден.
+#        '419':
+#          description: CSRF Token Mismatch — отсутствует или неверный `X-XSRF-TOKEN`/cookie.
+#        '500':
+#          description: Internal Server Error — непредвиденная ошибка на сервере.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/Error'
+#      security:
+#        - cookieAuth: [ ]
+#          xsrfHeader: [ ]
+#
+#  /thread-messages/{threadMessageID}/feedback:
+#    post:
+#      tags: [ ThreadMessages ]
+#      operationId: setThreadMessageFeedback
+#      summary: Оценить ответ нейронки
+#      description: >
+#        Сохраняет оценку для сообщения треда.
+#      x-lg-policy:
+#        action: update
+#        model: '\App\Models\ThreadMessage::class'
+#        param: threadMessageID
+#      parameters:
+#        - name: threadMessageID
+#          in: path
+#          required: true
+#          description: ID сообщения треда
+#          schema:
+#            type: integer
+#          example: 1
+#      requestBody:
+#        required: true
+#        content:
+#          application/json:
+#            schema:
+#              $ref: '#/components/schemas/FeedbackThreadMessageRequest'
+#      responses:
+#        '200':
+#          description: OK — оценка сохранена.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/ThreadMessage'
+#        '404':
+#          description: Not Found — сообщение не найдено.
+#        '419':
+#          description: CSRF Token Mismatch — отсутствует или неверный `X-XSRF-TOKEN`/cookie.
+#        '500':
+#          description: Internal Server Error — непредвиденная ошибка на сервере.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/Error'
+#      security:
+#        - cookieAuth: [ ]
+#          xsrfHeader: [ ]
+#
+#
+#  /rag/images/presign:
+#    post:
+#      tags: [ RagImages ]
+#      operationId: presign
+#      summary: Получить ссылки на изображения
+#      description: >
+#        Принимает массив ключей изображений и возвращает временные ссылки для их скачивания.
+#      requestBody:
+#        required: true
+#        content:
+#          application/json:
+#            schema:
+#              $ref: '#/components/schemas/PresignRagImagesRequest'
+#            examples:
+#              sample:
+#                summary: Пример запроса
+#                value:
+#                  keys:
+#                    - "/rag_api/images/42/550e8400-e29b-41d4-a716-446655440000"
+#      responses:
+#        '200':
+#          description: OK — ссылки выданы.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/PresignRagImagesResponse'
+#              examples:
+#                sample:
+#                  summary: Пример ответа
+#                  value:
+#                    images:
+#                      - key: "/rag_api/images/42/550e8400-e29b-41d4-a716-446655440000"
+#                        url: "https://s3...."
+#        '400':
+#          description: Validation Error — входные данные не прошли валидацию.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/ValidationError'
+#        '403':
+#          description: Forbidden — нет доступа.
+#        '404':
+#          description: Not Found — индекс не найден.
+#        '419':
+#          description: CSRF Token Mismatch — отсутствует или неверный `X-XSRF-TOKEN`/cookie.
+#        '500':
+#          description: Internal Server Error — непредвиденная ошибка на сервере.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/Error'
+#      security:
+#        - cookieAuth: [ ]
+#          xsrfHeader: [ ]
+#
+#components:
+#  securitySchemes:
+#    cookieAuth:
+#      type: apiKey
+#      in: cookie
+#      name: laravel_session
+#      description: >
+#        Сессионная cookie Laravel (`laravel_session`). Устанавливается фреймворком.
+#        Используется для stateful-аутентификации в SPA-потоке Sanctum.
+#    xsrfHeader:
+#      type: apiKey
+#      in: header
+#      name: X-XSRF-TOKEN
+#      description: >
+#        CSRF-токен, который должен совпадать со значением cookie `XSRF-TOKEN`
+#        (после URL-decode). Обычно выставляется клиентом автоматически (например, Axios).
+#    bearerAuth:
+#      type: http
+#      scheme: bearer
+#
+#  schemas:
+#    User:
+#      type: object
+#      description: Базовая модель пользователя.
+#      required: [ id, name ]
+#      properties:
+#        id:
+#          type: string
+#          description: Уникальный идентификатор пользователя (UUID/строка).
+#          example: "c7f0b0f0-9d2e-4c3c-8b1f-7a2a2e2f1c1a"
+#        name:
+#          type: string
+#          description: Уникальное имя пользователя (логин).
+#          example: "new_user_01"
+#
+#    RegisterUser:
+#      type: object
+#      description: Тело запроса для регистрации нового пользователя.
+#      required: [ name, password, access_code ]
+#      properties:
+#        name:
+#          type: string
+#          minLength: 4
+#          maxLength: 255
+#          description: >
+#            Имя пользователя (логин). Минимум 6, максимум 255 символов. Должно быть уникальным.
+#          example: "new_user_01"
+#        password:
+#          type: string
+#          minLength: 8
+#          maxLength: 128
+#          description: >
+#            Пароль пользователя. Рекомендуется сочетать буквы разного регистра, цифры и спецсимволы.
+#          example: "Secret123"
+#        access_code:
+#          type: string
+#          description: >
+#            Код доступа для регистрации.
+#          example: "secret-code"
+#
+#    RegisterResponse:
+#      type: object
+#      description: Ответ после успешной регистрации (без токена; аутентификация по cookie-сессии).
+#      required: [ user ]
+#      properties:
+#        user:
+#          $ref: '#/components/schemas/User'
+#
+#    LoginUser:
+#      type: object
+#      description: Тело запроса для входа пользователя.
+#      required: [ name, password ]
+#      properties:
+#        name:
+#          type: string
+#          minLength: 1
+#          maxLength: 255
+#          description: Имя пользователя (логин).
+#          example: "new_user_01"
+#        password:
+#          type: string
+#          minLength: 6
+#          maxLength: 128
+#          description: Пароль пользователя.
+#          example: "Secret123"
+#
+#    ValidationError:
+#      type: object
+#      description: Стандартизированный формат ошибки.
+#      properties:
+#        message:
+#          type: string
+#          nullable: true
+#          description: Общее сообщение об ошибке. Обычно приходит или оно или errors.
+#        errors:
+#          type: array
+#          nullable: true
+#          items:
+#            $ref: '#/components/schemas/ValidationErrorItem'
+#    ValidationErrorItem:
+#      type: object
+#      required: [ message ]
+#      properties:
+#        message:
+#          type: string
+#          description: Человеческое описание проблемы.
+#          example: "Имя должно быть не короче 6 символов."
+#        field:
+#          type: string
+#          description: Имя поля, к которому относится ошибка.
+#          example: name
+#
+#    Error:
+#      type: object
+#      required: [ message ]
+#      properties:
+#        message:
+#          type: string
+#          description: Человеческое описание проблемы.
+#          example: "Что то пошло не так."
+#
+#
+#    Project:
+#      type: object
+#      description: Полная модель проекта.
+#      required: [ id, name, user_id, max_requests, requests_made, available_requests, active_index_id ]
+#      properties:
+#        id:
+#          type: integer
+#          description: Идентификатор проекта.
+#          example: 1
+#        name:
+#          type: string
+#          description: Название проекта.
+#          example: "Мой первый проект"
+#        user_id:
+#          type: string
+#          description: Идентификатор пользователя-владельца (UUID/строка).
+#          example: "c7f0b0f0-9d2e-4c3c-8b1f-7a2a2e2f1c1a"
+#        max_requests:
+#          type: integer
+#          description: Максимально допустимое количество запросов для проекта.
+#          minimum: 0
+#          example: 1000
+#        requests_made:
+#          type: integer
+#          description: Общее количество успешных системных сообщений.
+#          minimum: 0
+#          example: 0
+#        available_requests:
+#          type: integer
+#          description: Количество доступных запросов.
+#          minimum: 0
+#          example: 1000
+#        access_code:
+#          type: string
+#          nullable: true
+#          description: Код для подключения к проекту.
+#          example: null
+#        active_index_id:
+#          type: integer
+#          description: ID активного индекса, который должен использоваться для запросов.
+#          example: 1
+#        ocr:
+#          type: boolean
+#          description: Флаг включения обработки изображений (OCR) для файлов проекта.
+#          example: false
+#        ocr_model:
+#          type: string
+#          description: OCR-модель, используемая при индексации.
+#          example: "GigaChat"
+#        image_path:
+#          type: string
+#          nullable: true
+#          description: Путь до картинки проекта относительно публичного хранилища.
+#          example: "image/sample.png"
+#        created_at:
+#          type: string
+#          format: date-time
+#          nullable: true
+#          description: Дата создания записи.
+#          example: "2025-08-14T12:00:00Z"
+#        updated_at:
+#          type: string
+#          format: date-time
+#          nullable: true
+#          description: Дата обновления записи.
+#          example: "2025-08-14T12:00:00Z"
+#
+#    Group:
+#      type: object
+#      description: Группа проектов и пользователей.
+#      required: [ id, owner_id, name, access_code ]
+#      properties:
+#        id:
+#          type: integer
+#          description: Идентификатор группы.
+#          example: 12
+#        owner_id:
+#          type: string
+#          description: Идентификатор владельца группы.
+#          example: "c7f0b0f0-9d2e-4c3c-8b1f-7a2a2e2f1c1a"
+#        name:
+#          type: string
+#          description: Название группы.
+#          example: "Команда маркетинга"
+#        access_code:
+#          type: string
+#          description: Код доступа к группе.
+#          example: "GRP1234"
+#        created_at:
+#          type: string
+#          format: date-time
+#          nullable: true
+#          description: Дата создания записи.
+#          example: "2025-08-14T12:00:00Z"
+#        updated_at:
+#          type: string
+#          format: date-time
+#          nullable: true
+#          description: Дата обновления записи.
+#          example: "2025-08-14T12:10:00Z"
+#
+#    JoinGroupMemberResponse:
+#      type: object
+#      description: Ответ после успешного присоединения пользователя к группе.
+#      required: [ group ]
+#      properties:
+#        group:
+#          $ref: '#/components/schemas/Group'
+#
+#    ListProjectGroupsResponse:
+#      type: object
+#      description: Ответ со списком групп проекта.
+#      required: [ groups ]
+#      properties:
+#        groups:
+#          type: array
+#          items:
+#            $ref: '#/components/schemas/Group'
+#
+#    JoinGroupMemberByAccessCodeRequest:
+#      type: object
+#      description: Запрос на присоединение пользователя к группе по коду доступа.
+#      required: [ access_code ]
+#      properties:
+#        access_code:
+#          type: string
+#          description: Код доступа группы.
+#          example: "TEAM-ACCESS-123"
+#
+#    CreateGroupRequest:
+#      type: object
+#      description: Запрос на создание новой группы.
+#      required: [ name ]
+#      properties:
+#        name:
+#          type: string
+#          description: Название группы.
+#          minLength: 1
+#          maxLength: 255
+#          example: "Команда маркетинга"
+#
+#    CreateGroupResponse:
+#      type: object
+#      description: Ответ после успешного создания группы.
+#      required: [ group ]
+#      properties:
+#        group:
+#          $ref: '#/components/schemas/Group'
+#
+#    AttachGroupsToProjectsRequest:
+#      type: object
+#      description: Запрос на привязку групп к проектам текущего пользователя.
+#      required: [ group_ids, project_ids ]
+#      properties:
+#        group_ids:
+#          type: array
+#          description: Список идентификаторов групп, которые нужно привязать.
+#          minItems: 1
+#          uniqueItems: true
+#          items:
+#            type: integer
+#            minimum: 1
+#          example: [ 3, 4 ]
+#        project_ids:
+#          type: array
+#          description: Список идентификаторов проектов, к которым привязываются группы.
+#          minItems: 1
+#          uniqueItems: true
+#          items:
+#            type: integer
+#            minimum: 1
+#          example: [ 5, 7 ]
+#
+#    AttachGroupsToProjectsResponse:
+#      type: object
+#      description: Ответ со списком групп, привязанных к выбранным проектам.
+#      required: [ groups ]
+#      properties:
+#        groups:
+#          type: array
+#          items:
+#            $ref: '#/components/schemas/Group'
+#
+#    CreateProject:
+#      type: object
+#      description: Тело запроса для создания проекта. `user_id` берётся из текущей сессии и не передаётся.
+#      required: [ name ]
+#      properties:
+#        name:
+#          type: string
+#          minLength: 1
+#          maxLength: 255
+#          description: Название проекта.
+#          example: "Мой первый проект"
+#
+#    JoinProjectByAccessCodeRequest:
+#      type: object
+#      description: Запрос на присоединение к проекту по коду доступа.
+#      required: [ access_code ]
+#      properties:
+#        access_code:
+#          type: string
+#          description: Код доступа проекта.
+#          example: "PROJ-ACCESS-123"
+#
+#    UpdateProject:
+#      type: object
+#      description: Поля для частичного обновления проекта. Передавайте только те, что нужно изменить.
+#      properties:
+#        name:
+#          type: string
+#          minLength: 1
+#          maxLength: 255
+#          nullable: true
+#          description: Новое имя проекта.
+#          example: "Новый проект"
+#        accessCode:
+#          type: string
+#          nullable: true
+#          description: Новый код доступа к проекту или `null` для очистки.
+#          example: "TEAM-ACCESS-123"
+#
+#    UploadProjectImage:
+#      type: object
+#      required: [ image ]
+#      properties:
+#        image:
+#          type: string
+#          format: binary
+#          description: Изображение проекта.
+#
+#
+#    SetProjectPromptRequest:
+#      type: object
+#      description: Тело запроса для сохранения системного промпта проекта.
+#      required: [ content ]
+#      properties:
+#        content:
+#          type: string
+#          minLength: 1
+#          maxLength: 10000
+#          description: Текст системного промпта.
+#          example: 'Ты — ассистент компании, отвечающий в деловом стиле.'
+#
+#    ProjectPromptHistoryItem:
+#      type: object
+#      description: Запись истории промптов проекта.
+#      required: [ history_id, project_id, prompt_id, content ]
+#      properties:
+#        history_id:
+#          type: integer
+#          description: ID записи истории промптов.
+#          example: 42
+#        project_id:
+#          type: integer
+#          description: ID проекта.
+#          example: 5
+#        prompt_id:
+#          type: integer
+#          description: ID промпта.
+#          example: 17
+#        content:
+#          type: string
+#          description: Текст промпта.
+#          example: 'Отвечай кратко и по существу.'
+#        created_at:
+#          type: string
+#          format: date-time
+#          nullable: true
+#          description: Дата создания записи истории.
+#          example: '2025-10-08T12:00:00Z'
+#
+#    ListProjectPromptsResponse:
+#      type: object
+#      description: Ответ со списком последних промптов проекта.
+#      required: [ prompts ]
+#      properties:
+#        prompts:
+#          type: array
+#          items:
+#            $ref: '#/components/schemas/ProjectPromptHistoryItem'
+#
+#    ProjectFileSummary:
+#      type: object
+#      description: Краткая информация о версии файла.
+#      required: [ file_version_id, name, uploaded_at, content_type ]
+#      properties:
+#        file_version_id:
+#          type: integer
+#          description: ID версии файла.
+#          example: 10
+#        name:
+#          type: string
+#          description: Имя файла.
+#          example: "report.pdf"
+#        uploaded_at:
+#          type: string
+#          format: date-time
+#          description: Дата загрузки версии.
+#          example: "2025-08-14T12:00:00Z"
+#        project_file_id:
+#          type: integer
+#          nullable: true
+#          description: ID файла проекта.
+#          example: 5
+#        size_bytes:
+#          type: integer
+#          nullable: true
+#          description: Размер файла в байтах.
+#          example: 123456
+#        content_type:
+#          type: string
+#          nullable: true
+#          description: MIME-тип файла.
+#          example: "text/plain"
+#        state:
+#          type: string
+#          nullable: true
+#          description: Статус обработки версии файла в индексе.
+#          example: pending
+#        error_message:
+#          type: string
+#          nullable: true
+#          description: Сообщение об ошибке обработки версии файла.
+#          example: "Ошибка при обработке файла"
+#
+#    ProjectFileVersion:
+#      type: object
+#      description: Данные версии файла проекта.
+#      required: [ id, project_file_id, s3_version_id, uploaded_at ]
+#      properties:
+#        id:
+#          type: integer
+#          description: ID версии файла.
+#          example: 42
+#        project_file_id:
+#          type: integer
+#          description: ID файла проекта.
+#          example: 10
+#        s3_version_id:
+#          type: string
+#          description: ID версии в S3.
+#          example: "v1"
+#        uploaded_by_user_id:
+#          type: string
+#          nullable: true
+#          description: ID пользователя, загрузившего версию.
+#          example: "user-123"
+#        uploaded_at:
+#          type: string
+#          format: date-time
+#          description: Дата загрузки версии.
+#          example: "2025-08-14T12:00:00Z"
+#        meta_original_name:
+#          type: string
+#          nullable: true
+#          description: Оригинальное имя файла.
+#          example: "document.txt"
+#        content_type:
+#          type: string
+#          nullable: true
+#          description: MIME-тип файла.
+#          example: "text/plain"
+#        size_bytes:
+#          type: integer
+#          nullable: true
+#          description: Размер файла в байтах.
+#          example: 123456
+#        etag:
+#          type: string
+#          nullable: true
+#          description: Значение ETag.
+#          example: "etag123"
+#        checksum_sha256:
+#          type: string
+#          nullable: true
+#          description: Контрольная сумма SHA256.
+#          example: "abc123"
+#
+#    ProjectWithFilesResponse:
+#      type: object
+#      description: Ответ с проектом и списком файлов.
+#      required: [ project, files ]
+#      properties:
+#        project:
+#          $ref: '#/components/schemas/Project'
+#        files:
+#          type: array
+#          items:
+#            $ref: '#/components/schemas/ProjectFileSummary'
+#
+#    SignUploadsRequest:
+#      type: object
+#      required: [ files ]
+#      properties:
+#        project_id:
+#          type: integer
+#          description: ID проекта который принадлежит юзеру.
+#          example: 1
+#        files:
+#          type: array
+#          description: Список файлов для получения ссылок.
+#          items:
+#            $ref: '#/components/schemas/SignUploadsRequestFile'
+#
+#    SignUploadsRequestFile:
+#      type: object
+#      required: [ name, size, content_type ]
+#      properties:
+#        name:
+#          type: string
+#          example: "report.pdf"
+#        size:
+#          type: integer
+#          example: 1234567
+#        content_type:
+#          type: string
+#          example: "application/pdf"
+#
+#    SignUploadsResponse:
+#      type: object
+#      required: [ uploads ]
+#      properties:
+#        uploads:
+#          type: array
+#          items:
+#            type: object
+#            required: [ file_name, key, url, fields ]
+#            properties:
+#              file_name:
+#                type: string
+#                description: Оригинальное имя файла.
+#                example: "report.pdf"
+#              key:
+#                type: string
+#                description: Итоговый ключ (путь) объекта в бакете.
+#                example: "projects/u123/7f2a-report.pdf"
+#              url:
+#                type: string
+#                description: URL (action) формы, на который отправлять multipart/form-data.
+#              fields:
+#                type: object
+#                additionalProperties:
+#                  type: string
+#                description: Поля формы для POST policy (вместе с файлом через multipart/form-data).
+#
+#    UploadCompleteRequest:
+#      type: object
+#      required:
+#        [ bucket, key, project_id, user_id, size_bytes, content_type, original_name, etag ]
+#      properties:
+#        bucket:
+#          type: string
+#          description: Название бакета в хранилище.
+#        key:
+#          type: string
+#          description: Ключ объекта в бакете.
+#        project_id:
+#          type: integer
+#          description: ID проекта.
+#        user_id:
+#          type: string
+#          description: ID пользователя, загрузившего файл.
+#        size_bytes:
+#          type: integer
+#          description: Фактический размер загруженного файла в байтах.
+#        content_type:
+#          type: string
+#          description: MIME‑тип файла.
+#        original_name:
+#          type: string
+#          description: Оригинальное имя файла.
+#        etag:
+#          type: string
+#          description: ETag, возвращённый хранилищем (для простых объектов — MD5 в кавычках или иной идентификатор).
+#
+#    DeleteUploadsRequest:
+#      type: object
+#      required: [ file_version_ids ]
+#      properties:
+#        file_version_ids:
+#          type: array
+#          description: Список ID версий файлов.
+#          items:
+#            type: integer
+#
+#    YcOsTriggerBatch:
+#      type: object
+#      description: Батч событий триггера Object Storage.
+#      required: [ messages ]
+#      properties:
+#        messages:
+#          type: array
+#          minItems: 1
+#          items:
+#            $ref: '#/components/schemas/YcOsTriggerMessage'
+#
+#    YcOsTriggerMessage:
+#      type: object
+#      description: Сообщение триггера Object Storage.
+#      required: [ event_metadata, details ]
+#      properties:
+#        event_metadata:
+#          $ref: '#/components/schemas/YcOsEventMetadata'
+#        details:
+#          $ref: '#/components/schemas/YcOsEventDetails'
+#
+#    YcOsEventMetadata:
+#      type: object
+#      description: Метаданные события Object Storage.
+#      required: [ event_id, event_type, created_at, tracing_context, cloud_id, folder_id ]
+#      properties:
+#        event_id:
+#          type: string
+#          description: Уникальный идентификатор события.
+#        event_type:
+#          type: string
+#          description: Тип события Object Storage.
+#          enum:
+#            - yandex.cloud.events.storage.ObjectCreate
+#            - yandex.cloud.events.storage.ObjectDelete
+#        created_at:
+#          type: string
+#          format: date-time
+#          description: Время генерации события (UTC, RFC3339/ISO8601).
+#        tracing_context:
+#          type: object
+#          description: Трассировочный контекст события (может содержать null-значения).
+#          properties:
+#            trace_id:
+#              type: string
+#              nullable: true
+#            span_id:
+#              type: string
+#              nullable: true
+#            parent_span_id:
+#              type: string
+#              nullable: true
+#        cloud_id:
+#          type: string
+#        folder_id:
+#          type: string
+#
+#    YcOsEventDetails:
+#      type: object
+#      description: Детали по объекту в бакете.
+#      required: [ bucket_id, object_id ]
+#      properties:
+#        bucket_id:
+#          type: string
+#        object_id:
+#          type: string
+#
+#    Thread:
+#      type: object
+#      description: Модель треда.
+#      required: [ id, project_id, name ]
+#      properties:
+#        id:
+#          type: integer
+#          description: Идентификатор треда.
+#          example: 1
+#        project_id:
+#          type: integer
+#          description: ID проекта, к которому относится тред.
+#          example: 1
+#        name:
+#          type: string
+#          nullable: true
+#          description: Название треда.
+#          example: "Общий чат"
+#        last_used_at:
+#          type: string
+#          format: date-time
+#          nullable: true
+#          description: Время последнего использования.
+#          example: "2025-08-14T12:00:00Z"
+#        created_at:
+#          type: string
+#          format: date-time
+#          nullable: true
+#          description: Дата создания записи.
+#          example: "2025-08-14T12:00:00Z"
+#        updated_at:
+#          type: string
+#          format: date-time
+#          nullable: true
+#          description: Дата обновления записи.
+#          example: "2025-08-14T12:00:00Z"
+#
+#    ThreadMessage:
+#      type: object
+#      description: Сообщение треда.
+#      required: [ id, thread_id, project_index_id, role, status, sequence ]
+#      properties:
+#        id:
+#          type: integer
+#          description: Идентификатор сообщения.
+#          example: 1
+#        thread_id:
+#          type: integer
+#          description: ID треда.
+#          example: 1
+#        project_index_id:
+#          type: integer
+#          description: ID индекса проекта, использованного при обработке.
+#          example: 1
+#        parent_id:
+#          type: integer
+#          nullable: true
+#          description: Родительское сообщение.
+#          example: null
+#        content:
+#          type: string
+#          nullable: true
+#          description: Содержимое сообщения.
+#          example: "Привет"
+#        role:
+#          type: string
+#          description: Роль автора (system|user|assistant|tool).
+#          example: user
+#        parameters:
+#          type: object
+#          nullable: true
+#          description: Параметры инференса.
+#          additionalProperties: true
+#        latency_ms:
+#          type: integer
+#          nullable: true
+#          description: Время ответа, мс.
+#          example: 120
+#        hash_request:
+#          type: string
+#          nullable: true
+#          description: Детерминированный хеш запроса.
+#        original_message_id:
+#          type: integer
+#          nullable: true
+#          description: ID исходного сообщения, если ответ взят из кеша.
+#        idempotency_key:
+#          type: string
+#          nullable: true
+#          description: Ключ идемпотентности.
+#        status:
+#          type: string
+#          description: Статус сообщения.
+#          example: ok
+#        sequence:
+#          type: integer
+#          description: Порядковый номер в треде.
+#          example: 1
+#        is_helpful:
+#          type: boolean
+#          nullable: true
+#          description: Сообщение было полезным.
+#        rag_response:
+#          allOf:
+#            - $ref: '#/components/schemas/RagResponse'
+#          nullable: true
+#          description: Ответ RAG для системного сообщения.
+#        created_at:
+#          type: string
+#          format: date-time
+#          nullable: true
+#          description: Дата создания записи.
+#        updated_at:
+#          type: string
+#          format: date-time
+#          nullable: true
+#          description: Дата обновления записи.
+#
+#    AskThreadRequest:
+#      type: object
+#      description: Запрос генерации ответа для треда.
+#      required: [ prompt ]
+#      properties:
+#        prompt:
+#          type: string
+#          minLength: 1
+#          maxLength: 10000
+#          description: Сообщение пользователя.
+#          example: "Привет"
+#
+#    StartThreadRequest:
+#      type: object
+#      description: Запрос на создание треда и получение ответа RAG.
+#      required: [ prompt ]
+#      properties:
+#        name:
+#          type: string
+#          maxLength: 255
+#          nullable: true
+#          description: Название треда.
+#          example: "Новый чат"
+#        prompt:
+#          type: string
+#          minLength: 1
+#          maxLength: 10000
+#          description: Сообщение пользователя.
+#          example: "Привет"
+#
+#    ExternalAskRequest:
+#      type: object
+#      description: Запрос внешнего клиента на получение текстового ответа.
+#      required: [ project_id, question ]
+#      properties:
+#        project_id:
+#          type: integer
+#          description: ID проекта, к которому привязан токен.
+#          example: 42
+#        question:
+#          type: string
+#          minLength: 1
+#          maxLength: 10000
+#          description: Вопрос пользователя, на который требуется ответ.
+#          example: "Как настроить интеграцию?"
+#
+#    ExternalAskResponse:
+#      type: object
+#      description: Ответ внешнему клиенту без ссылок и изображений.
+#      required: [ answer ]
+#      properties:
+#        answer:
+#          type: string
+#          description: Чистый текст ответа без вложений.
+#          example: "Для интеграции включите вебхук и передайте токен доступа."
+#
+#
+#
+#
+#    FeedbackThreadMessageRequest:
+#      type: object
+#      description: Оценка сообщения треда.
+#      required: [ is_helpful ]
+#      properties:
+#        is_helpful:
+#          type: boolean
+#          description: Сообщение было полезным.
+#          example: true
+#
+#    ThreadResponse:
+#      type: object
+#      description: Ответ с тредом и его сообщениями.
+#      required: [ thread, messages ]
+#      properties:
+#        thread:
+#          $ref: '#/components/schemas/Thread'
+#        messages:
+#          type: array
+#          items:
+#            $ref: '#/components/schemas/ThreadMessage'
+#
+#
+#    RagHit:
+#      type: object
+#      description: Фрагмент, использованный для ответа.
+#      required: [ score, text, url ]
+#      properties:
+#        score:
+#          type: number
+#          format: float
+#          description: Релевантность результата.
+#          example: 0.95
+#        text:
+#          type: string
+#          description: Текст найденного фрагмента.
+#          example: "Фрагмент текста..."
+#        url:
+#          type: string
+#          description: Ссылка на источник
+#          example: "{host}/docs?file_version_id=42&message_id=777"
+#
+#    RagFile:
+#      type: object
+#      description: Ссылка на документ и объект версии файла.
+#      required: [ url, backend_file_version ]
+#      properties:
+#        url:
+#          type: string
+#          description: Ссылка на документ.
+#          example: "/docs?file_version_id=42&message_id=777"
+#        backend_file_version:
+#          $ref: '#/components/schemas/ProjectFileVersion'
+#
+#    RagResponse:
+#      type: object
+#      description: Ответ RAG с источником и фрагментами.
+#      required: [ answer, source, hits, files, questions_left ]
+#      properties:
+#        answer:
+#          type: object
+#          description: Ответ на запрос пользователя, разбитый на фрагменты.
+#          required: [ fragments ]
+#          properties:
+#            fragments:
+#              type: array
+#              description: Фрагменты сообщения.
+#              items:
+#                type: object
+#                required: [ images ]
+#                properties:
+#                  text:
+#                    type: string
+#                    nullable: true
+#                    description: Текст фрагмента.
+#                  images:
+#                    type: array
+#                    description: Список ссылок на изображения.
+#                    items:
+#                      type: string
+#          example:
+#            fragments:
+#              - text: "Ответ"
+#                images:
+#                  - "https://example.com/rag_api/images/42/550e8400-e29b-41d4-a716-446655440000?X-Amz-Signature=..."
+#        source:
+#          type: string
+#          description: Источник ответа (локальный индекс или интернет).
+#          example: "local"
+#        hits:
+#          type: array
+#          description: Массив фрагментов, использованных для ответа.
+#          items:
+#            $ref: '#/components/schemas/RagHit'
+#        files:
+#          type: array
+#          description: Список ссылок на документы с версиями файлов.
+#          items:
+#            $ref: '#/components/schemas/RagFile'
+#        questions_left:
+#          type: integer
+#          description: Количество вопросов, которые можно задать до достижения лимита.
+#          example: 4
+#
+#    StartThreadResponse:
+#      allOf:
+#        - $ref: '#/components/schemas/RagResponse'
+#        - type: object
+#          description: ID созданного треда и ответ RAG.
+#          required: [ id ]
+#          properties:
+#            id:
+#              type: integer
+#              description: ID созданного треда.
+#              example: 1
+#
+#    PresignRagImagesRequest:
+#      type: object
+#      description: Запрос на получение временных ссылок изображений RAG.
+#      required: [ keys ]
+#      properties:
+#        keys:
+#          type: array
+#          description: Список ключей S3 изображений.
+#          items:
+#            type: string
+#
+#    PresignRagImagesResponse:
+#      type: object
+#      description: Список временных ссылок изображений.
+#      required: [ images ]
+#      properties:
+#        images:
+#          type: array
+#          items:
+#            type: object
+#            required: [ key, url ]
+#            properties:
+#              key:
+#                type: string
+#                description: Ключ объекта в S3.
+#              url:
+#                type: string
+#                format: uri
+#                description: Временная ссылка для скачивания.
+#
+#    GetRagFileResponse:
+#      type: object
+#      description: Ссылка на файл и использованные фрагменты.
+#      required: [ url, hits ]
+#      properties:
+#        url:
+#          type: string
+#          description: Pre-signed ссылка на файл.
+#          example: "https://s3.example.com/object?X-Amz-Signature=..."
+#        hits:
+#          type: array
+#          description: Хиты сообщения.
+#          items:
+#            $ref: '#/components/schemas/RagHit'
+#
+#    QueueGoogleDriveFolderImportRequest:
+#      type: object
+#      description: Запрос на постановку импорта папки Google Drive в очередь.
+#      required: [ root_folder_id ]
+#      properties:
+#        root_folder_id:
+#          type: string
+#          minLength: 1
+#          maxLength: 255
+#          description: Идентификатор корневой папки Google Drive.
+#          example: "1odrSFrmx53KDesKb3UbZ0StC17zikUu6"

@@ -65,7 +65,9 @@
         ],
         "pre-package-uninstall": [
             "Illuminate\\Foundation\\ComposerScripts::prePackageUninstall"
-        ]
+        ],
+        "openapi:jar": "mkdir -p tools && curl -fL --retry 3 --retry-delay 2 -o tools/openapi-generator-cli-7.14.0.jar https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/7.14.0/openapi-generator-cli-7.14.0.jar",
+        "openapi:generate": "HOME=$(pwd) java -jar tools/openapi-generator-cli-7.14.0.jar generate -c openapi-generator.config.json"
     },
     "extra": {
         "laravel": {
