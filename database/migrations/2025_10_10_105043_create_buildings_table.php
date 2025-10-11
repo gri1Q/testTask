@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::create('buildings', function (Blueprint $table) {
             $table->id();
+            $table->string('name')->comment('Название здания');
+            $table->string('address', 512)->comment('Адрес здания');
             $table->timestamps();
         });
     }

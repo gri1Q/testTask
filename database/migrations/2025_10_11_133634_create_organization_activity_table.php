@@ -11,18 +11,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('organization_phones', function (Blueprint $table) {
-            $table->id();
+        Schema::create('organization_activity', function (Blueprint $table) {
             $table->unsignedBigInteger('organization_id')->comment('ID организации');
-            $table->string('phone')->comment('Телефонный номер организации');
-            $table->timestamps();
+            $table->unsignedBigInteger('activity_id')->comment('ID вида деятельности');
 
             $table->foreign('organization_id')
                 ->references('id')
                 ->on('organizations')
                 ->cascadeOnDelete();
 
-            $table->unique(['organization_id', 'phone']);
+            $table->foreign('activity_id')
+                ->references('id')
+                ->on('activities')
+                ->cascadeOnDelete();
+
+            $table->primary(['organization_id', 'activity_id']);
         });
     }
 
@@ -31,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('organization_phones');
+        Schema::dropIfExists('organization_activity');
     }
 };
