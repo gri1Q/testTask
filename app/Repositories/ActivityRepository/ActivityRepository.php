@@ -64,7 +64,6 @@ class ActivityRepository implements ActivityRepositoryInterface
             ->get();
     }
 
-
     /**
      * Получить полное дерево видов деятельности (до 3 уровней).
      *

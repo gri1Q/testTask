@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Repositories\OrganizationPhoneRepository;
+namespace App\Repositories\OrganizationRepository;
 
 use App\Models\Organization;
 use Illuminate\Database\Eloquent\Collection;
