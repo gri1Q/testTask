@@ -22,14 +22,19 @@ class OrganizationRepository implements OrganizationRepositoryInterface
     }
 
     /**
-     * Получить организацию по ID.
+     * Получить организацию с телефонами по ID.
      *
      * @param int $id
      * @return Organization
      */
     public function getByID(int $id): Organization
     {
-        return Organization::query()->findOrFail($id);
+        return Organization::query()
+            ->leftJoin('organization_phones', 'organization_phones.organization_id', '=', 'organizations.id')
+            ->select('organizations.*')
+            ->where('organizations.id', $id)
+            ->groupBy('organizations.id')
+            ->firstOrFail();
     }
 
     /**
