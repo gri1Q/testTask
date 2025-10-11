@@ -6,303 +6,6 @@ servers:
   - url: http://127.0.0.1:8000/api
 
 paths:
-  /organizations/by-building/{buildingId}:
-    get:
-      tags: [ Organizations ]
-      operationId: listOrganizationsByBuilding
-      summary: Получить организации по зданию
-      description: >
-        Возвращает список организаций, расположенных в указанном здании.
-      x-lg-middleware:
-        - static.api.key
-      parameters:
-        - name: buildingId
-          in: path
-          required: true
-          description: Идентификатор здания
-          schema:
-            type: integer
-            minimum: 1
-      responses:
-        '200':
-          description: OK — список организаций найден.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OrganizationCollectionResponse'
-        '400':
-          description: Validation Error — параметры запроса некорректны.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ValidationError'
-        '401':
-          description: Unauthorized — неверный или отсутствует API-ключ.
-        '404':
-          description: Not Found — здание не найдено.
-        '500':
-          description: Internal Server Error — непредвиденная ошибка на сервере.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - staticApiKey: [ ]
-
-  /organizations/by-activity/{activityId}:
-    get:
-      tags: [ Organizations ]
-      operationId: listOrganizationsByActivity
-      summary: Получить организации по виду деятельности
-      description: >
-        Возвращает организации, относящиеся к указанному виду деятельности,
-        включая все дочерние направления.
-      x-lg-middleware:
-        - static.api.key
-      parameters:
-        - name: activityId
-          in: path
-          required: true
-          description: Идентификатор вида деятельности
-          schema:
-            type: integer
-            minimum: 1
-      responses:
-        '200':
-          description: OK — список организаций найден.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OrganizationCollectionResponse'
-        '400':
-          description: Validation Error — параметры запроса некорректны.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ValidationError'
-        '401':
-          description: Unauthorized — неверный или отсутствует API-ключ.
-        '404':
-          description: Not Found — вид деятельности не найден.
-        '500':
-          description: Internal Server Error — непредвиденная ошибка на сервере.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - staticApiKey: [ ]
-
-  /organizations/by-radius:
-    get:
-      tags: [ Organizations ]
-      operationId: listOrganizationsByRadius
-      summary: Поиск организаций по радиусу
-      description: >
-        Выполняет геопоиск организаций в пределах заданного радиуса от точки.
-      x-lg-middleware:
-        - static.api.key
-      parameters:
-        - name: latitude
-          in: query
-          required: true
-          description: Географическая широта центра поиска
-          schema:
-            type: number
-            format: double
-        - name: longitude
-          in: query
-          required: true
-          description: Географическая долгота центра поиска
-          schema:
-            type: number
-            format: double
-        - name: radiusMeters
-          in: query
-          required: true
-          description: Радиус поиска в метрах
-          schema:
-            type: number
-            format: double
-            minimum: 1
-      responses:
-        '200':
-          description: OK — список организаций найден.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OrganizationCollectionResponse'
-        '400':
-          description: Validation Error — параметры запроса некорректны.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ValidationError'
-        '401':
-          description: Unauthorized — неверный или отсутствует API-ключ.
-        '500':
-          description: Internal Server Error — непредвиденная ошибка на сервере.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - staticApiKey: [ ]
-
-  /organizations/by-rectangle:
-    get:
-      tags: [ Organizations ]
-      operationId: listOrganizationsByRectangle
-      summary: Поиск организаций внутри прямоугольника
-      description: >
-        Возвращает организации, попадающие в указанный прямоугольник на карте.
-      x-lg-middleware:
-        - static.api.key
-      parameters:
-        - name: northEastLatitude
-          in: query
-          required: true
-          description: Широта северо-восточного угла
-          schema:
-            type: number
-            format: double
-        - name: northEastLongitude
-          in: query
-          required: true
-          description: Долгота северо-восточного угла
-          schema:
-            type: number
-            format: double
-        - name: southWestLatitude
-          in: query
-          required: true
-          description: Широта юго-западного угла
-          schema:
-            type: number
-            format: double
-        - name: southWestLongitude
-          in: query
-          required: true
-          description: Долгота юго-западного угла
-          schema:
-            type: number
-            format: double
-      responses:
-        '200':
-          description: OK — список организаций найден.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OrganizationCollectionResponse'
-        '400':
-          description: Validation Error — параметры запроса некорректны.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ValidationError'
-        '401':
-          description: Unauthorized — неверный или отсутствует API-ключ.
-        '500':
-          description: Internal Server Error — непредвиденная ошибка на сервере.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - staticApiKey: [ ]
-
-  /organizations/search/by-name:
-    get:
-      tags: [ Organizations ]
-      operationId: listOrganizationsByName
-      summary: Поиск организаций по названию
-      description: >
-        Возвращает организации, название которых содержит указанную подстроку.
-      x-lg-middleware:
-        - static.api.key
-      parameters:
-        - name: name
-          in: query
-          required: true
-          description: Часть названия организации
-          schema:
-            type: string
-            minLength: 1
-        - name: limit
-          in: query
-          required: false
-          description: Максимальное количество записей в ответе
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 100
-      responses:
-        '200':
-          description: OK — список организаций найден.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OrganizationCollectionResponse'
-        '400':
-          description: Validation Error — параметры запроса некорректны.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ValidationError'
-        '401':
-          description: Unauthorized — неверный или отсутствует API-ключ.
-        '500':
-          description: Internal Server Error — непредвиденная ошибка на сервере.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - staticApiKey: [ ]
-
-  /organizations/{organizationId}:
-    get:
-      tags: [ Organizations ]
-      operationId: getOrganization
-      summary: Получить организацию по ID
-      description: >
-        Возвращает подробную информацию об организации по её идентификатору.
-      x-lg-middleware:
-        - static.api.key
-      parameters:
-        - name: organizationId
-          in: path
-          required: true
-          description: Идентификатор организации
-          schema:
-            type: integer
-            minimum: 1
-      responses:
-        '200':
-          description: OK — организация найдена.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OrganizationResponse'
-        '400':
-          description: Validation Error — параметры запроса некорректны.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ValidationError'
-        '401':
-          description: Unauthorized — неверный или отсутствует API-ключ.
-        '404':
-          description: Not Found — организация не найдена.
-        '500':
-          description: Internal Server Error — непредвиденная ошибка на сервере.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - staticApiKey: [ ]
-
   /buildings:
     get:
       tags: [ Buildings ]
@@ -332,23 +35,6 @@ paths:
 
 components:
   securitySchemes:
-    cookieAuth:
-      type: apiKey
-      in: cookie
-      name: laravel_session
-      description: >
-        Сессионная cookie Laravel (`laravel_session`). Устанавливается фреймворком.
-        Используется для stateful-аутентификации в SPA-потоке Sanctum.
-    xsrfHeader:
-      type: apiKey
-      in: header
-      name: X-XSRF-TOKEN
-      description: >
-        CSRF-токен, который должен совпадать со значением cookie `XSRF-TOKEN`
-        (после URL-decode). Обычно выставляется клиентом автоматически (например, Axios).
-    bearerAuth:
-      type: http
-      scheme: bearer
     staticApiKey:
       type: apiKey
       in: header
@@ -358,19 +44,36 @@ components:
   schemas:
     OrganizationActivity:
       type: object
-      description: Вид деятельности организации.
       required: [ id, name ]
       properties:
         id:
           type: integer
-          description: Идентификатор вида деятельности.
         name:
           type: string
-          description: Название вида деятельности.
         parent_id:
           type: integer
           nullable: true
-          description: Родительский вид деятельности.
+        depth:
+          type: integer
+          minimum: 1
+          maximum: 3
+          description: Уровень вложенности (1..3)
+    ActivityTreeNode:
+      type: object
+      required: [ id, name, depth, children ]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        depth:
+          type: integer
+          minimum: 1
+          maximum: 3
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/ActivityTreeNode'
 
     OrganizationBuilding:
       type: object
@@ -386,48 +89,45 @@ components:
         address:
           type: string
           nullable: true
-          description: Почтовый адрес здания.
+          description: Адрес здания.
         latitude:
           type: number
           format: double
-          description: Географическая широта здания.
+          description: Широта.
         longitude:
           type: number
           format: double
-          description: Географическая долгота здания.
+          description: Долгота.
 
     Organization:
       type: object
-      description: Организация с информацией о расположении и виде деятельности.
-      required: [ id, name, latitude, longitude, building, activity ]
+      description: Организация с информацией о расположении и видах деятельности.
+      required: [ id, name, building, activities, phone_numbers ]
       properties:
         id:
           type: integer
-          description: Идентификатор организации.
         name:
           type: string
-          description: Название организации.
         description:
           type: string
           nullable: true
-          description: Краткое описание организации.
-        latitude:
-          type: number
-          format: double
-          description: Географическая широта организации.
-        longitude:
-          type: number
-          format: double
-          description: Географическая долгота организации.
+        phone_numbers:
+          type: array
+          items:
+            type: string
+            description: Телефон в формате E.164 или локальном формате
+          minItems: 1
         distance_meters:
           type: number
           format: double
           nullable: true
-          description: Расстояние до организации в метрах (для геопоиска).
         building:
           $ref: '#/components/schemas/OrganizationBuilding'
-        activity:
-          $ref: '#/components/schemas/OrganizationActivity'
+        activities:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrganizationActivity'
+          minItems: 1
 
     OrganizationCollectionResponse:
       type: object
