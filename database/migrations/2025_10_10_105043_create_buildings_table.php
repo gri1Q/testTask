@@ -14,8 +14,8 @@ return new class extends Migration {
             $table->id();
             $table->string('name')->comment('Название здания');
             $table->string('address')->comment('Адрес здания');
-            $table->decimal('latitude')->comment('Широта');
-            $table->decimal('longitude')->comment('Долгота');
+            $table->decimal('latitude',10, 6)->comment('Широта');
+            $table->decimal('longitude',10, 6)->comment('Долгота');
             $table->timestamps();
         });
     }

@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -13,14 +12,12 @@ return new class extends Migration
     {
         Schema::create('organization_phones', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('organization_id')->comment('ID организации');
+            $table->foreignId('organization_id')
+                ->comment('ID организации')
+                ->constrained('organizations')
+                ->cascadeOnDelete();
             $table->string('phone')->comment('Телефонный номер организации');
             $table->timestamps();
-
-            $table->foreign('organization_id')
-                ->references('id')
-                ->on('organizations')
-                ->cascadeOnDelete();
 
             $table->unique(['organization_id', 'phone']);
         });

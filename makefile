@@ -7,4 +7,4 @@ serve:
 	docker compose -f .\docker-compose.yml up --build
 
 serve-down:
-	docker compose -f docker-compose.serve.yml down
+	docker compose -f docker-compose.yml down

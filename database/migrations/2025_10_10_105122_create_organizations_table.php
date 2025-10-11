@@ -12,16 +12,14 @@ return new class extends Migration {
     {
         Schema::create('organizations', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->comment('Название организации');
+            $table->string('name')->comment('Название организации')->index();
             $table->text('description')->nullable()->comment('Описание организации');
             $table->string('email')->nullable()->comment('Контактный email');
-            $table->unsignedBigInteger('building_id')->comment('ID здания, в котором находится организация');
-            $table->timestamps();
-
-            $table->foreign('building_id')
-                ->references('id')
-                ->on('buildings')
+            $table->foreignId('building_id')
+                ->comment('ID здания, в котором находится организация')
+                ->constrained('buildings')
                 ->cascadeOnDelete();
+            $table->timestamps();
         });
     }
 

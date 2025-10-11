@@ -12,16 +12,15 @@ return new class extends Migration {
     {
         Schema::create('activities', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->comment('Название деятельности');
+            $table->string('name')->comment('Название деятельности')->index();
             $table->text('description')->nullable()->comment('Описание деятельности');
-            $table->unsignedBigInteger('parent_id')->nullable()->comment('ID родительской деятельности');
-            $table->timestamps();
-
-            $table->foreign('parent_id')
-                ->references('id')
-                ->on('activities')
+            $table->foreignId('parent_id')
+                ->nullable()
+                ->comment('ID родительской деятельности')
+                ->constrained('activities')
                 ->cascadeOnDelete();
             $table->unsignedTinyInteger('level')->default(1)->comment('Уровень вложенности');
+            $table->timestamps();
         });
     }
 
