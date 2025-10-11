@@ -5,6 +5,9 @@ namespace App\Repositories\BuildingRepository;
 use App\Models\Building;
 use Illuminate\Database\Eloquent\Collection;
 
+/**
+ * Репозиторий для сущности Building.
+ */
 class BuildingRepository implements BuildingRepositoryInterface
 {
     /**

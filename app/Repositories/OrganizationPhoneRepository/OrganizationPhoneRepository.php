@@ -5,7 +5,10 @@ namespace App\Repositories\OrganizationPhoneRepository;
 use App\Models\OrganizationPhone;
 use Illuminate\Database\Eloquent\Collection;
 
-class OrganizationPhoneRepository
+/**
+ * Репозиторий для сущности OrganizationPhone.
+ */
+class OrganizationPhoneRepository implements OrganizationPhoneRepositoryInterface
 {
     /**
      * Создать телефон для организации.

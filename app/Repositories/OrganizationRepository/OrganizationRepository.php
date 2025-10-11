@@ -5,6 +5,9 @@ namespace App\Repositories\OrganizationRepository;
 use App\Models\Organization;
 use Illuminate\Database\Eloquent\Collection;
 
+/**
+ * Репозиторий для сущности Organization.
+ */
 class OrganizationRepository implements OrganizationRepositoryInterface
 {
     /**

@@ -5,6 +5,9 @@ namespace App\Repositories\ActivityRepository;
 use App\Models\Activity;
 use Illuminate\Database\Eloquent\Collection;
 
+/**
+ * Репозиторий для сущности Activity.
+ */
 class ActivityRepository implements ActivityRepositoryInterface
 {
     /**
