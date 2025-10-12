@@ -20,32 +20,42 @@ declare(strict_types=1);
 
 
 /**
- * ValidationErrorItem
+ * OrganizationBuilding
  */
+
 namespace Generated\DTO;
 
 /**
- * ValidationErrorItem
+ * OrganizationBuilding
+ * @description Информация о здании, в котором располагается организация.
  */
 
 use Crell\Serde\Attributes as Serde;
 use Crell\Serde\Renaming\Cases;
 
 #[Serde\ClassSettings(renameWith: Cases::snake_case)]
-class ValidationErrorItem
+class OrganizationBuilding
 {
     /**
      *
-     * Человеческое описание проблемы.
-     * @param string $message
+     * Идентификатор здания.
+     * @param int $id
      *
-     * Имя поля, к которому относится ошибка.
-     * @param string $field
+     * Полный адрес здания.
+     * @param string $address
+     *
+     * Географическая широта здания.
+     * @param float $latitude
+     *
+     * Географическая долгота здания.
+     * @param float $longitude
      */
 
     public function __construct(
-        public string $message,
-        public string $field,
+        public int $id,
+        public string $address,
+        public float $latitude,
+        public float $longitude,
     ) {
     }
 }

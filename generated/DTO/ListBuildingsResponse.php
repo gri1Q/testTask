@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types=1);
 
 /**
@@ -23,7 +22,6 @@ declare(strict_types=1);
 /**
  * ListBuildingsResponse
  */
-
 namespace Generated\DTO;
 
 /**

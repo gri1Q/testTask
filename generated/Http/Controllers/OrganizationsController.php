@@ -24,9 +24,9 @@ namespace Generated\Http\Controllers;
 use Crell\Serde\SerdeCommon;
 use Exception;
 use Generated\DTO\Error;
-use Generated\DTO\GetBuildingResponse;
-use Generated\DTO\ListBuildingsResponse;
 use Generated\DTO\NoContent404;
+use Generated\DTO\OrganizationListResponse;
+use Generated\DTO\OrganizationResponse;
 use Generated\DTO\ValidationError;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -34,25 +34,24 @@ use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Validator;
 
 
-class BuildingsController extends Controller
+class OrganizationsController extends Controller
 {
     /**
      * Constructor
      */
     public function __construct(
-        private readonly BuildingsApiInterface $api,
+        private readonly OrganizationsApiInterface $api,
         private readonly SerdeCommon $serde = new SerdeCommon(),
-    )
-    {
+    ) {
     }
 
     /**
-     * Operation getBuilding
+     * Operation getOrganization
      *
-     * Получить информацию о здании.
+     * Получить организацию по ID.
      *
      */
-    public function getBuilding(Request $request, int $id): JsonResponse
+    public function getOrganization(Request $request, int $id): JsonResponse
     {
         $validator = Validator::make(
             array_merge(
@@ -75,14 +74,14 @@ class BuildingsController extends Controller
 
 
         try {
-            $apiResult = $this->api->getBuilding($id);
+            $apiResult = $this->api->getOrganization($id);
         } catch (Exception $exception) {
             // This shouldn't happen
             report($exception);
             return response()->json(['error' => $exception->getMessage()], 500);
         }
 
-        if ($apiResult instanceof GetBuildingResponse) {
+        if ($apiResult instanceof OrganizationResponse) {
             return response()->json($this->serde->serialize($apiResult, format: 'array'), 200);
         }
 
@@ -98,22 +97,27 @@ class BuildingsController extends Controller
         // This shouldn't happen
         return response()->abort(500);
     }
+
     /**
-     * Operation listBuildings
+     * Operation listOrganizationsByBuilding
      *
-     * Получить список зданий.
+     * Список организаций в здании.
      *
      */
-    public function listBuildings(Request $request): JsonResponse
+    public function listOrganizationsByBuilding(Request $request, int $buildingID): JsonResponse
     {
         $validator = Validator::make(
             array_merge(
                 [
-
+                    'buildingID' => $buildingID,
                 ],
                 $request->all(),
             ),
             [
+                'buildingID' => [
+                    'required',
+                    'integer',
+                ],
             ],
         );
 
@@ -121,20 +125,21 @@ class BuildingsController extends Controller
             return response()->json(['error' => 'Invalid input'], 400);
         }
 
+
         try {
-            $apiResult = $this->api->listBuildings();
+            $apiResult = $this->api->listOrganizationsByBuilding($buildingID);
         } catch (Exception $exception) {
             // This shouldn't happen
             report($exception);
             return response()->json(['error' => $exception->getMessage()], 500);
         }
 
-        if ($apiResult instanceof ListBuildingsResponse) {
+        if ($apiResult instanceof OrganizationListResponse) {
             return response()->json($this->serde->serialize($apiResult, format: 'array'), 200);
         }
 
-        if ($apiResult instanceof ValidationError) {
-            return response()->json($this->serde->serialize($apiResult, format: 'array'), 400);
+        if ($apiResult instanceof NoContent404) {
+            return response()->json($this->serde->serialize($apiResult, format: 'array'), 404);
         }
 
         if ($apiResult instanceof Error) {
@@ -145,13 +150,14 @@ class BuildingsController extends Controller
         // This shouldn't happen
         return response()->abort(500);
     }
+
     /**
-     * Operation searchBuildingsInRadius
+     * Operation listOrganizationsNearby
      *
-     * Геопоиск зданий по радиусу.
+     * Список организаций в радиусе от точки.
      *
      */
-    public function searchBuildingsInRadius(Request $request): JsonResponse
+    public function listOrganizationsNearby(Request $request): JsonResponse
     {
         $validator = Validator::make(
             array_merge(
@@ -189,14 +195,69 @@ class BuildingsController extends Controller
         $radius = $request->float('radius');
 
         try {
-            $apiResult = $this->api->searchBuildingsInRadius($latitude, $longitude, $radius);
+            $apiResult = $this->api->listOrganizationsNearby($latitude, $longitude, $radius);
         } catch (Exception $exception) {
             // This shouldn't happen
             report($exception);
             return response()->json(['error' => $exception->getMessage()], 500);
         }
 
-        if ($apiResult instanceof ListBuildingsResponse) {
+        if ($apiResult instanceof OrganizationListResponse) {
+            return response()->json($this->serde->serialize($apiResult, format: 'array'), 200);
+        }
+
+        if ($apiResult instanceof ValidationError) {
+            return response()->json($this->serde->serialize($apiResult, format: 'array'), 400);
+        }
+
+        if ($apiResult instanceof Error) {
+            return response()->json($this->serde->serialize($apiResult, format: 'array'), 500);
+        }
+
+
+        // This shouldn't happen
+        return response()->abort(500);
+    }
+
+    /**
+     * Operation searchOrganizationsByName
+     *
+     * Поиск организаций по названию.
+     *
+     */
+    public function searchOrganizationsByName(Request $request): JsonResponse
+    {
+        $validator = Validator::make(
+            array_merge(
+                [
+
+                ],
+                $request->all(),
+            ),
+            [
+                'name' => [
+                    'required',
+                    'min:1',
+                    'string',
+                ],
+            ],
+        );
+
+        if ($validator->fails()) {
+            return response()->json(['error' => 'Invalid input'], 400);
+        }
+
+        $name = $request->string('name')->value();
+
+        try {
+            $apiResult = $this->api->searchOrganizationsByName($name);
+        } catch (Exception $exception) {
+            // This shouldn't happen
+            report($exception);
+            return response()->json(['error' => $exception->getMessage()], 500);
+        }
+
+        if ($apiResult instanceof OrganizationListResponse) {
             return response()->json($this->serde->serialize($apiResult, format: 'array'), 200);
         }
 

@@ -20,50 +20,48 @@ declare(strict_types=1);
 
 
 /**
- * Building
+ * Organization
  */
+
 namespace Generated\DTO;
 
 /**
- * Building
- * @description Информация о здании с координатами.
+ * Organization
+ * @description Карточка организации со всеми связанными данными.
  */
 
 use Crell\Serde\Attributes as Serde;
 use Crell\Serde\Renaming\Cases;
-use DateTime;
 
 #[Serde\ClassSettings(renameWith: Cases::snake_case)]
-class Building
+class Organization
 {
     /**
      *
-     * Уникальный идентификатор здания.
+     * Идентификатор организации.
      * @param int $id
      *
-     * Почтовый адрес здания.
-     * @param string $address
+     * Название организации.
+     * @param string $name
      *
-     * Географическая широта.
-     * @param float $latitude
      *
-     * Географическая долгота.
-     * @param float $longitude
+     * @param OrganizationBuilding $building
      *
-     * Дата создания записи.
-     * @param DateTime $createdAt
+     * Список телефонных номеров организации.
+     * @param OrganizationPhone[] $phones
      *
-     * Дата обновления записи.
-     * @param DateTime $updatedAt
+     * Виды деятельности организации.
+     * @param OrganizationActivity[] $activities
      */
 
     public function __construct(
         public int $id,
-        public string $address,
-        public float $latitude,
-        public float $longitude,
-        public DateTime $createdAt,
-        public DateTime $updatedAt,
+        public string $name,
+        public OrganizationBuilding $building,
+        #[Serde\SequenceField(arrayType: OrganizationPhone::class)]
+        public array $phones,
+        #[Serde\SequenceField(arrayType: OrganizationActivity::class)]
+        public array $activities,
     ) {
     }
 }

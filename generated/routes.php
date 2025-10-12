@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types=1);
 
 /**
@@ -21,6 +20,7 @@ declare(strict_types=1);
 
 
 use Generated\Http\Controllers\BuildingsController;
+use Generated\Http\Controllers\OrganizationsController;
 use Illuminate\Support\Facades\Route;
 
 /**
@@ -47,6 +47,47 @@ Route::GET('/api/buildings', [BuildingsController::class, 'listBuildings'])
 Route::GET(
     '/api/buildings/search/circle',
     [BuildingsController::class, 'searchBuildingsInRadius']
+)
+    ->name('');
+
+/**
+ * GET getOrganization
+ * Summary: Получить организацию по ID
+ * Notes: Возвращает карточку организации с адресом, телефонами и видами деятельности.
+ */
+Route::GET('/api/organizations/{id}', [OrganizationsController::class, 'getOrganization'])
+    ->name('');
+
+/**
+ * GET listOrganizationsByBuilding
+ * Summary: Список организаций в здании
+ * Notes: Возвращает все организации, которые располагаются в указанном здании.
+ */
+Route::GET(
+    '/api/buildings/{buildingID}/organizations',
+    [OrganizationsController::class, 'listOrganizationsByBuilding']
+)
+    ->name('');
+
+/**
+ * GET listOrganizationsNearby
+ * Summary: Список организаций в радиусе от точки
+ * Notes: Возвращает организации, расположенные в указанном радиусе от заданной точки на карте.
+ */
+Route::GET(
+    '/api/organizations/nearby',
+    [OrganizationsController::class, 'listOrganizationsNearby']
+)
+    ->name('');
+
+/**
+ * GET searchOrganizationsByName
+ * Summary: Поиск организаций по названию
+ * Notes: Выполняет полнотекстовый поиск по названию организации без учёта регистра.
+ */
+Route::GET(
+    '/api/organizations/search',
+    [OrganizationsController::class, 'searchOrganizationsByName']
 )
     ->name('');
 

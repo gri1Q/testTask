@@ -20,32 +20,30 @@ declare(strict_types=1);
 
 
 /**
- * ValidationErrorItem
+ * OrganizationPhone
  */
+
 namespace Generated\DTO;
 
 /**
- * ValidationErrorItem
+ * OrganizationPhone
+ * @description Телефонный номер организации.
  */
 
 use Crell\Serde\Attributes as Serde;
 use Crell\Serde\Renaming\Cases;
 
 #[Serde\ClassSettings(renameWith: Cases::snake_case)]
-class ValidationErrorItem
+class OrganizationPhone
 {
     /**
      *
-     * Человеческое описание проблемы.
-     * @param string $message
-     *
-     * Имя поля, к которому относится ошибка.
-     * @param string $field
+     * Номер телефона в произвольном формате.
+     * @param string $phone
      */
 
     public function __construct(
-        public string $message,
-        public string $field,
+        public string $phone,
     ) {
     }
 }

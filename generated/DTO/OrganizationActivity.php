@@ -20,34 +20,42 @@ declare(strict_types=1);
 
 
 /**
- * ValidationError
+ * OrganizationActivity
  */
+
 namespace Generated\DTO;
 
 /**
- * ValidationError
- * @description Стандартизированный формат ошибки.
+ * OrganizationActivity
+ * @description Вид деятельности, к которому относится организация.
  */
 
 use Crell\Serde\Attributes as Serde;
 use Crell\Serde\Renaming\Cases;
 
 #[Serde\ClassSettings(renameWith: Cases::snake_case)]
-class ValidationError
+class OrganizationActivity
 {
     /**
      *
-     * Общее сообщение об ошибке. Обычно приходит или оно или errors.
-     * @param null | string $message
+     * Идентификатор вида деятельности.
+     * @param int $id
      *
+     * Название вида деятельности.
+     * @param string $name
      *
-     * @param null | ValidationErrorItem[] $errors
+     * Уровень вложенности в дереве (1 — корень, 3 — максимальный уровень).
+     * @param int $level
+     *
+     * Идентификатор родительского вида деятельности.
+     * @param null | int $parentId
      */
 
     public function __construct(
-        public ?string $message = null,
-        #[Serde\SequenceField(arrayType: ValidationErrorItem::class)]
-        public ?array $errors = null,
+        public int $id,
+        public string $name,
+        public int $level,
+        public ?int $parentId = null,
     ) {
     }
 }

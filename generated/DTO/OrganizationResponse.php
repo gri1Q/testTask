@@ -20,32 +20,30 @@ declare(strict_types=1);
 
 
 /**
- * ValidationErrorItem
+ * OrganizationResponse
  */
+
 namespace Generated\DTO;
 
 /**
- * ValidationErrorItem
+ * OrganizationResponse
+ * @description Ответ с карточкой организации.
  */
 
 use Crell\Serde\Attributes as Serde;
 use Crell\Serde\Renaming\Cases;
 
 #[Serde\ClassSettings(renameWith: Cases::snake_case)]
-class ValidationErrorItem
+class OrganizationResponse
 {
     /**
      *
-     * Человеческое описание проблемы.
-     * @param string $message
      *
-     * Имя поля, к которому относится ошибка.
-     * @param string $field
+     * @param Organization $organization
      */
 
     public function __construct(
-        public string $message,
-        public string $field,
+        public Organization $organization,
     ) {
     }
 }
