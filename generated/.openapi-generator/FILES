@@ -1,4 +1,5 @@
 .gitignore
+DTO/Activity.php
 DTO/Building.php
 DTO/Error.php
 DTO/GetBuildingResponse.php

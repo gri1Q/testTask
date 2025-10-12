@@ -11,26 +11,14 @@ class ActivityService
     {
     }
 
-    public function first(int $id)
+    /**
+     * Поулчить по IDs.
+     *
+     * @param array $IDs
+     * @return Collection
+     */
+    public function getByIDs(array $IDs): Collection
     {
-        return $this->activityRepository->first($id);
-    }
-
-    /** @return list<int> */
-    public function getDescendantIDs(int $activityId): array
-    {
-        return $this->activityRepository->getDescendantIDs($activityId);
-    }
-
-    /** @return \Illuminate\Support\Collection<int, mixed> keyBy('id') обычно в сервисе */
-    public function getByIDs(array $ids): Collection
-    {
-        return $this->activityRepository->getByIDs($ids);
-    }
-
-    /** @return array<int, list<int>> orgId => [activityId,...] */
-    public function getActivityIDsByOrganizationIDs(array $organizationIds): array
-    {
-        return $this->activityRepository->getActivityIDsByOrganizationIDs($organizationIds);
+        return $this->activityRepository->getByIDs($IDs);
     }
 }

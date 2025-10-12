@@ -1,0 +1,20 @@
+<?php
+
+namespace App\Repositories\OrganizationActivityRepository;
+
+use App\Models\OrganizationActivity;
+use Illuminate\Database\Eloquent\Collection;
+
+class OrganizationActivityRepository implements OrganizationActivityRepositoryInterface
+{
+    /**
+     * Получить связующую таблицу по IDs организации.
+     *
+     * @param array $organizationIDs
+     * @return Collection
+     */
+    public function getOrganizationActivityByOrganizationIDs(array $organizationIDs): Collection
+    {
+        return OrganizationActivity::query()->whereIn('organization_id', $organizationIDs)->get();
+    }
+}

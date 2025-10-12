@@ -8,6 +8,8 @@ use App\Repositories\ActivityRepository\ActivityRepository;
 use App\Repositories\ActivityRepository\ActivityRepositoryInterface;
 use App\Repositories\BuildingRepository\BuildingRepository;
 use App\Repositories\BuildingRepository\BuildingRepositoryInterface;
+use App\Repositories\OrganizationActivityRepository\OrganizationActivityRepository;
+use App\Repositories\OrganizationActivityRepository\OrganizationActivityRepositoryInterface;
 use App\Repositories\OrganizationPhoneRepository\OrganizationPhoneRepository;
 use App\Repositories\OrganizationPhoneRepository\OrganizationPhoneRepositoryInterface;
 use App\Repositories\OrganizationRepository\OrganizationRepository;
@@ -29,6 +31,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(OrganizationRepositoryInterface::class, OrganizationRepository::class);
         $this->app->bind(OrganizationPhoneRepositoryInterface::class, OrganizationPhoneRepository::class);
         $this->app->bind(BuildingRepositoryInterface::class, BuildingRepository::class);
+        $this->app->bind(OrganizationActivityRepositoryInterface::class, OrganizationActivityRepository::class);
         $this->app->bind(ActivityRepositoryInterface::class, ActivityRepository::class);
 
         $this->app->singleton(OrganizationService::class);

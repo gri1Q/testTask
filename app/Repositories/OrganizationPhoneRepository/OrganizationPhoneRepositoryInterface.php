@@ -31,4 +31,10 @@ interface OrganizationPhoneRepositoryInterface
      * @return Collection
      */
     public function searchByNumber(string $phone): Collection;
+
+    /**
+     * @param array $organizationIds
+     * @return Collection
+     */
+    public function getPhonesByOrganizationIDs(array $organizationIds): Collection;
 }

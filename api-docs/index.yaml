@@ -195,6 +195,21 @@ components:
           items:
             $ref: '#/components/schemas/Building'
 
+    Activity:
+      type: object
+      description: Короткая информация о виде деятельности.
+      required: [ id, name ]
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Уникальный идентификатор вида деятельности.
+          example: 7
+        name:
+          type: string
+          description: Название вида деятельности.
+          example: "Молочная продукция"
+
     Organization:
       type: object
       description: Информация об организации, находящейся в здании.
@@ -220,6 +235,19 @@ components:
           nullable: true
           description: Контактный email организации.
           example: "info@romashka.ru"
+        phones:
+          type: array
+          nullable: true
+          description: Список контактных телефонов организации.
+          items:
+            type: string
+            example: "+7 495 123-45-67"
+        activities:
+          type: array
+          nullable: true
+          description: Виды деятельности, к которым относится организация.
+          items:
+            $ref: '#/components/schemas/Activity'
         building_id:
           type: integer
           format: int64
@@ -237,7 +265,6 @@ components:
           nullable: true
           description: Дата обновления записи.
           example: "2024-12-01T09:10:00Z"
-
     ListOrganizationsInBuildingResponse:
       type: object
       description: Ответ со списком организаций, находящихся в указанном здании.

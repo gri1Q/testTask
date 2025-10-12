@@ -22,21 +22,16 @@ class OrganizationPhoneRepository implements OrganizationPhoneRepositoryInterfac
             ->get();
     }
 
-    public function getPhonesByOrganizationIDs(array $organizationIds): array
+    /**
+     * @param array $organizationIds
+     * @return Collection
+     */
+    public function getPhonesByOrganizationIDs(array $organizationIds): Collection
     {
-        $rows = OrganizationPhone::query()
+        return OrganizationPhone::query()
             ->whereIn('organization_id', $organizationIds)
             ->get();
 
-        $map = [];
-        foreach ($rows as $row) {
-            $map[$row->organization_id][] = $row;
-        }
-        // гарантируем ключи для всех orgIds
-        foreach ($organizationIds as $id) {
-            $map[$id] = $map[$id] ?? [];
-        }
-        return $map;
     }
 
     public function searchByNumber(string $phone): Collection
