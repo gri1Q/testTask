@@ -1,0 +1,14 @@
+.gitignore
+DTO/Building.php
+DTO/Error.php
+DTO/GetBuildingResponse.php
+DTO/ListBuildingsResponse.php
+DTO/NoContent404.php
+DTO/ValidationError.php
+DTO/ValidationErrorItem.php
+Http/Controllers/BuildingsApiInterface.php
+Http/Controllers/BuildingsController.php
+README.md
+composer.json
+phpunit.xml.dist
+routes.php

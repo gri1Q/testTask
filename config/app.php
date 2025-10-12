@@ -105,6 +105,8 @@ return [
         ),
     ],
 
+    'api_static_key' => env('API_STATIC_KEY'),
+
     /*
     |--------------------------------------------------------------------------
     | Maintenance Mode Driver
