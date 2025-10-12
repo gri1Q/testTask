@@ -4,67 +4,54 @@ namespace App\Repositories\ActivityRepository;
 
 use App\Models\Activity;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 
-/**
- * Репозиторий для сущности Activity.
- */
 class ActivityRepository implements ActivityRepositoryInterface
 {
-
-    /**
-     * Получить вид деятельности по ID.
-     *
-     * @param int $activityID
-     * @return Activity
-     */
-    public function first(int $activityID): Activity
+    public function first(int $id): Activity
     {
-        return Activity::query()->findOrFail($activityID);
+        return Activity::query()->findOrFail($id);
     }
 
-
-    /**
-     * Получить коллекцию видов деятельности по их ID.
-     *
-     * @param array $activityIDs
-     * @return Collection
-     */
-    public function getByIDs(array $activityIDs): Collection
+    public function getByIDs(array $ids): Collection
     {
-        if ($activityIDs === []) {
-            return new Collection();
-        }
-
-        return Activity::query()->whereIn('id', $activityIDs)->get();
+        return Activity::query()->whereIn('id', $ids)->get();
     }
 
-
-    /**
-     * Получить идентификаторы всех дочерних видов деятельности.
-     *
-     * @param int $activityID
-     * @return array
-     */
-    public function getDescendantIDs(int $activityID): array
+    public function getDescendantIDs(int $activityId): array
     {
-        $descendantIDs = [];
-        $currentLevel = [$activityID];
+        // Пример с adjacency list (parent_id). Для производительности лучше CTE.
+        $result = [];
+        $queue = [$activityId];
 
-        while ($currentLevel !== []) {
-            $children = Activity::query()
-                ->whereIn('parent_id', $currentLevel)
-                ->pluck('id')
-                ->all();
-
-            if ($children === []) {
-                break;
+        while ($queue) {
+            $parent = array_pop($queue);
+            $children = Activity::query()->where('parent_id', $parent)->pluck('id')->all();
+            foreach ($children as $c) {
+                if (!isset($result[$c])) {
+                    $result[$c] = true;
+                    $queue[] = $c;
+                }
             }
-
-            $descendantIDs = array_merge($descendantIDs, $children);
-            $currentLevel = $children;
         }
-
-        return $descendantIDs;
+        return array_keys($result);
     }
 
+    public function getActivityIDsByOrganizationIDs(array $organizationIds): array
+    {
+        // pivot: organization_activity (organization_id, activity_id)
+        $rows = DB::table('organization_activity')
+            ->whereIn('organization_id', $organizationIds)
+            ->select('organization_id', 'activity_id')
+            ->get();
+
+        $map = [];
+        foreach ($rows as $r) {
+            $map[$r->organization_id][] = (int)$r->activity_id;
+        }
+        foreach ($organizationIds as $id) {
+            $map[$id] = $map[$id] ?? [];
+        }
+        return $map;
+    }
 }

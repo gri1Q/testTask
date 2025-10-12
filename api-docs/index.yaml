@@ -31,6 +31,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+      security:
+        - apiKeyAuth: [ ]
 
   /buildings/{id}:
     get:
@@ -61,60 +63,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+      security:
+        - apiKeyAuth: [ ]
 
-  /buildings/search/circle:
-    get:
-      tags: [ Buildings ]
-      operationId: searchBuildingsInRadius
-      summary: Геопоиск зданий по радиусу
-      description: Находит здания в пределах заданного радиуса от точки.
-      parameters:
-        - name: latitude
-          in: query
-          required: true
-          description: Центральная широта.
-          schema:
-            type: number
-            format: double
-            minimum: -90
-            maximum: 90
-        - name: longitude
-          in: query
-          required: true
-          description: Центральная долгота.
-          schema:
-            type: number
-            format: double
-            minimum: -180
-            maximum: 180
-        - name: radius
-          in: query
-          required: true
-          description: Радиус поиска в метрах.
-          schema:
-            type: number
-            format: double
-            minimum: 1
-          example: 500
-      responses:
-        '200':
-          description: OK — найдены здания в радиусе.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ListBuildingsResponse'
-        '400':
-          description: Validation Error — входные данные не прошли валидацию.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ValidationError'
-        '500':
-          description: Internal Server Error — непредвиденная ошибка на сервере.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
   /organizations:
     get:
       tags: [ Organizations ]

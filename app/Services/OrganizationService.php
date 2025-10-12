@@ -2,35 +2,29 @@
 
 namespace App\Services;
 
-
 use App\Repositories\OrganizationPhoneRepository\OrganizationPhoneRepositoryInterface;
 use App\Repositories\OrganizationRepository\OrganizationRepositoryInterface;
+use Illuminate\Support\Collection as SupportCollection;
 
 class OrganizationService
 {
     public function __construct(
         private OrganizationRepositoryInterface $organizationRepository,
-        private OrganizationPhoneRepositoryInterface $organizationPhoneRepository
-    ) {
-    }
-    /**
-     * Получить список организаций с учётом фильтров.
-     *
-     * @param ListOrganizationsRequest $request Параметры списка
-     * @return ListOrganizationsResponse DTO-ответ со списком организаций
-     *
-     * @throws ModelNotFoundException Если фильтрующее здание или деятельность не найдены
-     */
+        private OrganizationPhoneRepositoryInterface $organizationPhoneRepository,
+        private ActivityService $activityService,
+        private BuildingService $buildingService,
+    ) {}
+
     public function listOrganizations(ListOrganizationsRequest $request): ListOrganizationsResponse
     {
         if ($request->buildingID !== null) {
-            $this->buildingDomainService->first($request->buildingID);
+            $this->buildingService->first($request->buildingID);
         }
 
         $activityFilterIDs = [];
         if ($request->activityID !== null) {
-            $activity = $this->activityDomainService->first($request->activityID);
-            $activityFilterIDs = $this->activityDomainService->getDescendantIDs($activity->id);
+            $activity = $this->activityService->first($request->activityID);
+            $activityFilterIDs = $this->activityService->getDescendantIDs($activity->id);
             array_unshift($activityFilterIDs, $activity->id);
             $activityFilterIDs = array_values(array_unique($activityFilterIDs));
         }
@@ -44,32 +38,31 @@ class OrganizationService
             $request->radiusKm,
         );
 
-        $searchResult = $this->organizationDomainService->search(
+        $searchResult = $this->organizationRepository->search(
             $filters,
             $request->page,
             $request->perPage,
         );
 
-        $organizations = $searchResult->organizations;
+        $organizations = $searchResult->organizations; // Collection<Organization>
         $organizationIDs = $organizations->pluck('id')->all();
-        /** @var list<int> $buildingIDs */
         $buildingIDs = $organizations->pluck('building_id')->unique()->values()->all();
 
-        $buildingMap = $this->buildingDomainService->getByIDs($buildingIDs)->keyBy('id');
-        $phonesMap = $this->organizationDomainService->getPhonesByOrganizationIDs($organizationIDs);
-        $activitiesMap = $this->organizationDomainService->getActivityIDsByOrganizationIDs($organizationIDs);
+        $buildings = $this->buildingService->getByIDs($buildingIDs)->keyBy('id');
+        $phones = $this->organizationPhoneRepository->getPhonesByOrganizationIDs($organizationIDs);
+        $activities = $this->activityService->getActivityIDsByOrganizationIDs($organizationIDs);
 
         $activityIDs = [];
-        foreach ($activitiesMap as $ids) {
+        foreach ($activities as $ids) {
             foreach ($ids as $id) {
                 $activityIDs[$id] = true;
             }
         }
-        $activityList = $this->activityDomainService->getByIDs(array_keys($activityIDs))->keyBy('id');
+        $activityList = $this->activityService->getByIDs(array_keys($activityIDs))->keyBy('id');
 
         $items = [];
         foreach ($organizations as $organization) {
-            $building = $buildingMap->get($organization->building_id);
+            $building = $buildings->get($organization->building_id);
             if ($building === null) {
                 continue;
             }
@@ -82,10 +75,10 @@ class OrganizationService
                 (float)$building->longitude,
             );
 
-            $activityDTOs = $this->makeActivityDTOs($activitiesMap[$organization->id] ?? [], $activityList);
-            $phoneDTOs = $this->makePhoneDTOs($phonesMap[$organization->id] ?? []);
+            $activityDTOs = $this->makeActivityDTOs($activities[$organization->id] ?? [], $activityList);
+            $phoneDTOs = $this->makePhoneDTOs($phones[$organization->id] ?? []);
 
-            $distance = $organization->getAttribute('distance_km');
+            $distance = $organization->getAttribute('distance_km'); // см. репозиторий: выставим alias distance_km
             $distanceValue = $distance !== null ? (float)$distance : null;
 
             $items[] = new OrganizationListItem(
@@ -101,39 +94,19 @@ class OrganizationService
             );
         }
 
-        $pages = (int)ceil($searchResult->total / max(1, $request->perPage));
-        if ($searchResult->total === 0) {
-            $pages = 0;
-        }
-
-        $pagination = new PaginationMeta(
-            $request->page,
-            $request->perPage,
-            $searchResult->total,
-            $pages,
-        );
-
-        return new ListOrganizationsResponse($items, $pagination);
+        return new ListOrganizationsResponse($items);
     }
 
-    /**
-     * Получить детальную информацию об организации.
-     *
-     * @param int $organizationID ID организации
-     * @return OrganizationResponse DTO-ответ с данными организации
-     *
-     * @throws ModelNotFoundException Если организация не найдена
-     */
     public function getOrganization(int $organizationID): OrganizationResponse
     {
-        $organization = $this->organizationDomainService->first($organizationID);
-        $building = $this->buildingDomainService->first($organization->building_id);
+        $organization = $this->organizationRepository->first($organizationID);
+        $building = $this->buildingService->first($organization->building_id);
 
-        $phonesMap = $this->organizationDomainService->getPhonesByOrganizationIDs([$organizationID]);
-        $activitiesMap = $this->organizationDomainService->getActivityIDsByOrganizationIDs([$organizationID]);
+        $phonesMap = $this->organizationPhoneRepository->getPhonesByOrganizationIDs([$organizationID]);
+        $activitiesMap = $this->activityService->getActivityIDsByOrganizationIDs([$organizationID]);
         $activityIDs = $activitiesMap[$organizationID] ?? [];
 
-        $activityList = $this->activityDomainService->getByIDs($activityIDs)->keyBy('id');
+        $activityList = $this->activityService->getByIDs($activityIDs)->keyBy('id');
 
         $buildingDTO = new BuildingDTO(
             $building->id,
@@ -163,13 +136,7 @@ class OrganizationService
         return new OrganizationResponse($organizationDTO);
     }
 
-    /**
-     * Сформировать DTO видов деятельности.
-     *
-     * @param list<int> $activityIDs Список ID видов деятельности
-     * @param SupportCollection<int, mixed> $activityList Коллекция видов деятельности, индексированная по ID
-     * @return list<ActivityDTO> Массив DTO видов деятельности
-     */
+    /** @return list<ActivityDTO> */
     private function makeActivityDTOs(array $activityIDs, SupportCollection $activityList): array
     {
         $activityDTOs = [];
@@ -178,7 +145,6 @@ class OrganizationService
             if ($activity === null) {
                 continue;
             }
-
             $activityDTOs[] = new ActivityDTO(
                 $activity->id,
                 $activity->name,
@@ -186,16 +152,10 @@ class OrganizationService
                 $activity->parent_id,
             );
         }
-
         return $activityDTOs;
     }
 
-    /**
-     * Сформировать DTO телефонов организации.
-     *
-     * @param list<OrganizationPhone> $phones Телефоны организации
-     * @return list<OrganizationPhoneDTO> Массив DTO телефонов
-     */
+    /** @return list<OrganizationPhoneDTO> */
     private function makePhoneDTOs(array $phones): array
     {
         $phoneDTOs = [];
@@ -205,7 +165,6 @@ class OrganizationService
                 $phone->description,
             );
         }
-
         return $phoneDTOs;
     }
 }

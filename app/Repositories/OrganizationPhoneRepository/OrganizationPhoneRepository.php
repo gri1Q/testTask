@@ -5,32 +5,16 @@ namespace App\Repositories\OrganizationPhoneRepository;
 use App\Models\OrganizationPhone;
 use Illuminate\Database\Eloquent\Collection;
 
-/**
- * Репозиторий для сущности OrganizationPhone.
- */
 class OrganizationPhoneRepository implements OrganizationPhoneRepositoryInterface
 {
-    /**
-     * Создать телефон для организации.
-     *
-     * @param int $organizationId
-     * @param string $number
-     * @return OrganizationPhone
-     */
     public function create(int $organizationId, string $number): OrganizationPhone
     {
         return OrganizationPhone::query()->create([
             'organization_id' => $organizationId,
-            'number' => $number,
+            'phone' => $number,
         ]);
     }
 
-    /**
-     * Получить все телефоны организации.
-     *
-     * @param int $organizationId
-     * @return Collection
-     */
     public function allByOrganization(int $organizationId): Collection
     {
         return OrganizationPhone::query()
@@ -38,12 +22,23 @@ class OrganizationPhoneRepository implements OrganizationPhoneRepositoryInterfac
             ->get();
     }
 
-    /**
-     * Найти телефоны по номеру.
-     *
-     * @param string $phone
-     * @return Collection
-     */
+    public function getPhonesByOrganizationIDs(array $organizationIds): array
+    {
+        $rows = OrganizationPhone::query()
+            ->whereIn('organization_id', $organizationIds)
+            ->get();
+
+        $map = [];
+        foreach ($rows as $row) {
+            $map[$row->organization_id][] = $row;
+        }
+        // гарантируем ключи для всех orgIds
+        foreach ($organizationIds as $id) {
+            $map[$id] = $map[$id] ?? [];
+        }
+        return $map;
+    }
+
     public function searchByNumber(string $phone): Collection
     {
         return OrganizationPhone::query()

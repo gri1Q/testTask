@@ -5,33 +5,8 @@ namespace App\Repositories\BuildingRepository;
 use App\Models\Building;
 use Illuminate\Database\Eloquent\Collection;
 
-/**
- * Репозиторий для сущности Building.
- */
 class BuildingRepository implements BuildingRepositoryInterface
 {
-    /**
-     * Добавить здание.
-     *
-     * @param Building $building
-     * @return void
-     */
-    public function create(Building $building): void
-    {
-        $building->save();
-    }
-
-    /**
-     * Получить здание по ID.
-     *
-     * @param int $id
-     * @return Building
-     */
-    public function getByID(int $id): Building
-    {
-        return Building::query()->findOrFail($id);
-    }
-
     /**
      * Получить все здания.
      *
@@ -39,7 +14,21 @@ class BuildingRepository implements BuildingRepositoryInterface
      */
     public function list(): Collection
     {
-        return Building::all();
+        return Building::query()->orderBy('id')->get();
     }
 
+    public function getByID(int $id): Building
+    {
+        return Building::query()->where('id', $id)->firstOrFail();
+    }
+
+    public function first(int $id): Building
+    {
+        return Building::query()->findOrFail($id);
+    }
+
+    public function getByIDs(array $ids): Collection
+    {
+        return Building::query()->whereIn('id', $ids)->get();
+    }
 }

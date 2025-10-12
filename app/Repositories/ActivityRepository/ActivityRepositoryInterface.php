@@ -8,37 +8,20 @@ use Illuminate\Database\Eloquent\Collection;
 interface ActivityRepositoryInterface
 {
     /**
-     * Создать новый вид деятельности.
-     *
-     * @param Activity $activity
-     * @return void
-     */
-    public function create(Activity $activity): void;
-
-    /**
-     * Получить вид деятельности по ID.
+     * Найти сущность по ID.
      *
      * @param int $id
      * @return Activity
      */
-    public function getByID(int $id): Activity;
+    public function findOrFail(int $id): Activity;
 
     /**
-     * Получить все виды деятельности.
-     *
-     * @return Collection
+     * Получить коллекцию по массиву ID (пустой массив => пустая коллекция).
      */
-    public function getAll(): Collection;
+    public function findMany(array $ids): Collection;
 
     /**
-     * Получить только корневые виды деятельности.
-     *
-     * @return Collection
-     */
-    public function getRootActivities(): Collection;
-
-    /**
-     * Получить дочерние виды деятельности для указанного родителя.
+     * Вернуть дочерние записи для указанного родителя.
      *
      * @param int $parentId
      * @return Collection
@@ -46,9 +29,19 @@ interface ActivityRepositoryInterface
     public function getChildren(int $parentId): Collection;
 
     /**
-     * Получить полное дерево видов деятельности (до 3 уровней).
+     *  Вернуть ID всех детей для набора родительских ID.
+     *  Удобно для уровневого обхода.
+     *
+     * @param array $parentIds
+     * @return array|int[]
+     */
+    public function getChildrenIdsOf(array $parentIds): array;
+
+
+    /**
+     * Получить только корневые записи.
      *
      * @return Collection
      */
-    public function getTree(): Collection;
+    public function getRoots(): Collection;
 }

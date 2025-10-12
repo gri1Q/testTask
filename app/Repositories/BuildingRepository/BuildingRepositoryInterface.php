@@ -7,13 +7,6 @@ use Illuminate\Database\Eloquent\Collection;
 
 interface BuildingRepositoryInterface
 {
-    /**
-     * Добавить здание.
-     *
-     * @param Building $building
-     * @return void
-     */
-    public function create(Building $building): void;
 
     /**
      * Получить здание по ID.

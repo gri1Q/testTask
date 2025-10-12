@@ -7,7 +7,6 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Services\BuildingService;
 use App\Services\DTO\Building\BuildingItem;
-use App\Services\DTO\Building\SearchBuildingsByRadiusRequest;
 use Generated\DTO\Building as GeneratedBuilding;
 use Generated\DTO\Error;
 use Generated\DTO\GetBuildingResponse as GeneratedGetBuildingResponse;
@@ -80,62 +79,6 @@ class BuildingsController extends Controller implements BuildingsApiInterface
             $this->makeTransportBuilding($response->building),
         );
     }
-
-    /**
-     * Геопоиск зданий в радиусе.
-     *
-     * @param float $latitude Центральная широта
-     * @param float $longitude Центральная долгота
-     * @param float $radius Радиус поиска в метрах
-     * @return GeneratedListBuildingsResponse|ValidationError|Error Ответ списка зданий или ошибка
-     */
-    public function searchBuildingsInRadius(
-        float $latitude,
-        float $longitude,
-        float $radius,
-    ): GeneratedListBuildingsResponse|ValidationError|Error {
-        $ve = $this->validateOrNull(
-            [
-                'latitude' => $latitude,
-                'longitude' => $longitude,
-                'radius' => $radius,
-            ],
-            [
-                'latitude' => ['required', 'numeric', 'min:-90', 'max:90'],
-                'longitude' => ['required', 'numeric', 'min:-180', 'max:180'],
-                'radius' => ['required', 'numeric', 'min:1'],
-            ],
-            [
-                'latitude.min' => 'Широта не может быть меньше -90.',
-                'latitude.max' => 'Широта не может быть больше 90.',
-                'longitude.min' => 'Долгота не может быть меньше -180.',
-                'longitude.max' => 'Долгота не может быть больше 180.',
-                'radius.min' => 'Радиус должен быть положительным.',
-            ],
-        );
-
-        if ($ve !== null) {
-            return $ve;
-        }
-
-        try {
-            $response = $this->buildingService->searchWithinRadius(
-                new SearchBuildingsByRadiusRequest($latitude, $longitude, $radius),
-            );
-        } catch (Throwable $e) {
-            report($e);
-
-            return new Error('Что то пошло не так');
-        }
-
-        $buildings = array_map(
-            fn(BuildingItem $item): GeneratedBuilding => $this->makeTransportBuilding($item),
-            $response->buildings,
-        );
-
-        return new GeneratedListBuildingsResponse($buildings);
-    }
-
 
     /**
      * Преобразовать DTO сервиса в транспортный объект.

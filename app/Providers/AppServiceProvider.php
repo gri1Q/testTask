@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Http\Controllers\Api\BuildingsController;
+use App\Http\Controllers\Api\OrganizationsController;
 use App\Repositories\ActivityRepository\ActivityRepository;
 use App\Repositories\ActivityRepository\ActivityRepositoryInterface;
 use App\Repositories\BuildingRepository\BuildingRepository;
@@ -15,6 +16,7 @@ use App\Services\ActivityService;
 use App\Services\BuildingService;
 use App\Services\OrganizationService;
 use Generated\Http\Controllers\BuildingsApiInterface;
+use Generated\Http\Controllers\OrganizationsApiInterface;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -34,6 +36,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(ActivityService::class);
 
         $this->app->singleton(BuildingsApiInterface::class, BuildingsController::class);
+        $this->app->singleton(OrganizationsApiInterface::class, OrganizationsController::class);
     }
 
     /**

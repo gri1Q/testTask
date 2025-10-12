@@ -26,6 +26,7 @@ use Illuminate\Support\Facades\Route;
  * Notes: Возвращает данные здания по идентификатору.
  */
 Route::GET('/api/buildings/{id}', [\Generated\Http\Controllers\BuildingsController::class, 'getBuilding'])
+    ->middleware('api.key')
 ->name('');
 
 /**
@@ -34,14 +35,7 @@ Route::GET('/api/buildings/{id}', [\Generated\Http\Controllers\BuildingsControll
  * Notes: Возвращает список доступных зданий с координатами.
  */
 Route::GET('/api/buildings', [\Generated\Http\Controllers\BuildingsController::class, 'listBuildings'])
-->name('');
-
-/**
- * GET searchBuildingsInRadius
- * Summary: Геопоиск зданий по радиусу
- * Notes: Находит здания в пределах заданного радиуса от точки.
- */
-Route::GET('/api/buildings/search/circle', [\Generated\Http\Controllers\BuildingsController::class, 'searchBuildingsInRadius'])
+    ->middleware('api.key')
 ->name('');
 
 /**

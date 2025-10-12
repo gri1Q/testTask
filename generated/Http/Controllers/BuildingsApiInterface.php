@@ -53,24 +53,4 @@ interface BuildingsApiInterface {
         \Generated\DTO\Error
     ;
 
-
-    /**
-     * Operation searchBuildingsInRadius
-     *
-     * Геопоиск зданий по радиусу
-     * @param float $latitude
-     * @param float $longitude
-     * @param float $radius
-     * @return \Generated\DTO\ListBuildingsResponse | \Generated\DTO\ValidationError | \Generated\DTO\Error
-     */
-    public function searchBuildingsInRadius(
-            float $latitude,
-            float $longitude,
-            float $radius,
-    ):
-        \Generated\DTO\ListBuildingsResponse | 
-        \Generated\DTO\ValidationError | 
-        \Generated\DTO\Error
-    ;
-
 }
