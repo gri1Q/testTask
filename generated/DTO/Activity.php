@@ -25,7 +25,7 @@ namespace Generated\DTO;
 
 /**
  * Activity
- * @description Вид деятельности организации в каталоге.
+ * @description Короткая информация о виде деятельности.
  */
 
 use Crell\Serde\Attributes as Serde;
@@ -36,28 +36,16 @@ class Activity
 {
     /**
     *
-    * Идентификатор деятельности.
+    * Уникальный идентификатор вида деятельности.
     * @param int $id
     *
-    * Уникальный символьный код деятельности.
-    * @param string $code
-    *
-    * Название деятельности.
+    * Название вида деятельности.
     * @param string $name
-    *
-    * Уровень вложенности в дереве (1 — корень, 3 — максимальный допустимый уровень).
-    * @param int $level
-    *
-    * Идентификатор родительской деятельности.
-    * @param null | int $parentId
     */
 
    public function __construct(
        public int $id,
-       public string $code,
        public string $name,
-       public int $level,
-       public ?int $parentId = null,
    ) {}
 }
 

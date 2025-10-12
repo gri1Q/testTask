@@ -29,13 +29,12 @@ interface OrganizationsApiInterface {
      *
      * Получить организацию по ID
      * @param int $id
-     * @return \Generated\DTO\OrganizationResponse | \Generated\DTO\NoContent401 | \Generated\DTO\NoContent404 | \Generated\DTO\Error
+     * @return \Generated\DTO\OrganizationResponse | \Generated\DTO\NoContent404 | \Generated\DTO\Error
      */
     public function getOrganization(
             int $id,
     ):
         \Generated\DTO\OrganizationResponse | 
-        \Generated\DTO\NoContent401 | 
         \Generated\DTO\NoContent404 | 
         \Generated\DTO\Error
     ;
@@ -44,28 +43,35 @@ interface OrganizationsApiInterface {
     /**
      * Operation listOrganizations
      *
-     * Получить список организаций
-     * @param null | int $buildingId
-     * @param null | int $activityId
+     * Фильтрация и поиск организаций
      * @param null | string $name
-     * @param null | float $latitude
-     * @param null | float $longitude
-     * @param null | int $radiusMeters
-     * @param null | int $limit
-     * @return \Generated\DTO\ListOrganizationsResponse | \Generated\DTO\ValidationError | \Generated\DTO\NoContent401 | \Generated\DTO\Error
+     * @param null | int $activityID
+     * @param null | int $buildingID
+     * @return \Generated\DTO\ListOrganizationsResponse | \Generated\DTO\ValidationError | \Generated\DTO\Error
      */
     public function listOrganizations(
-            ?int $buildingId,
-            ?int $activityId,
             ?string $name,
-            ?float $latitude,
-            ?float $longitude,
-            ?int $radiusMeters,
-            ?int $limit,
+            ?int $activityID,
+            ?int $buildingID,
     ):
         \Generated\DTO\ListOrganizationsResponse | 
         \Generated\DTO\ValidationError | 
-        \Generated\DTO\NoContent401 | 
+        \Generated\DTO\Error
+    ;
+
+
+    /**
+     * Operation listOrganizationsInBuilding
+     *
+     * Получить список организаций в здании
+     * @param int $id
+     * @return \Generated\DTO\ListOrganizationsInBuildingResponse | \Generated\DTO\NoContent404 | \Generated\DTO\Error
+     */
+    public function listOrganizationsInBuilding(
+            int $id,
+    ):
+        \Generated\DTO\ListOrganizationsInBuildingResponse | 
+        \Generated\DTO\NoContent404 | 
         \Generated\DTO\Error
     ;
 

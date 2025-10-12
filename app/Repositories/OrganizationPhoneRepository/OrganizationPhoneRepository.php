@@ -1,53 +1,38 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repositories\OrganizationPhoneRepository;
 
 use App\Models\OrganizationPhone;
 use Illuminate\Database\Eloquent\Collection;
 
-/**
- * Репозиторий для сущности OrganizationPhone.
- */
 class OrganizationPhoneRepository implements OrganizationPhoneRepositoryInterface
 {
-    /**
-     * Создать телефон для организации.
-     *
-     * @param int $organizationId
-     * @param string $number
-     * @return OrganizationPhone
-     */
-    public function create(int $organizationId, string $number): OrganizationPhone
-    {
-        return OrganizationPhone::query()->create([
-            'organization_id' => $organizationId,
-            'number' => $number,
-        ]);
-    }
 
     /**
      * Получить все телефоны организации.
      *
-     * @param int $organizationId
+     * @param int $organizationID
      * @return Collection
      */
-    public function allByOrganization(int $organizationId): Collection
+    public function allByOrganization(int $organizationID): Collection
     {
         return OrganizationPhone::query()
-            ->where('organization_id', $organizationId)
+            ->where('organization_id', $organizationID)
             ->get();
     }
 
     /**
-     * Найти телефоны по номеру.
+     * Получить все телефоны по IDs организаций.
      *
-     * @param string $phone
+     * @param array $organizationIDs
      * @return Collection
      */
-    public function searchByNumber(string $phone): Collection
+    public function getPhonesByOrganizationIDs(array $organizationIDs): Collection
     {
         return OrganizationPhone::query()
-            ->where('phone', $phone)
+            ->whereIn('organization_id', $organizationIDs)
             ->get();
     }
 }

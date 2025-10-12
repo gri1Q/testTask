@@ -2,15 +2,12 @@
 DTO/Activity.php
 DTO/Building.php
 DTO/Error.php
-DTO/GeoPoint.php
 DTO/GetBuildingResponse.php
 DTO/ListBuildingsResponse.php
+DTO/ListOrganizationsInBuildingResponse.php
 DTO/ListOrganizationsResponse.php
-DTO/NoContent401.php
 DTO/NoContent404.php
 DTO/Organization.php
-DTO/OrganizationListItem.php
-DTO/OrganizationPhone.php
 DTO/OrganizationResponse.php
 DTO/ValidationError.php
 DTO/ValidationErrorItem.php

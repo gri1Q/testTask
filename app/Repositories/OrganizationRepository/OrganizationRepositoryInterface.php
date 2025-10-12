@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repositories\OrganizationRepository;
 
 use App\Models\Organization;
@@ -8,41 +10,28 @@ use Illuminate\Database\Eloquent\Collection;
 interface OrganizationRepositoryInterface
 {
     /**
-     * Создание организации.
-     *
-     * @param Organization $organization
-     * @return void
-     */
-    public function create(Organization $organization): void;
-
-    /**
-     * Получить организацию по ID.
+     * Найти организацию по ID.
      *
      * @param int $id
      * @return Organization
      */
-    public function getByID(int $id): Organization;
+    public function first(int $id): Organization;
 
     /**
-     * Получить все организации.
+     * Получить организации по ID здания.
      *
+     * @param int $buildingID
      * @return Collection
      */
-    public function getAll(): Collection;
+    public function listByBuildingID(int $buildingID): Collection;
 
     /**
-     * Получить все организации в конкретном здании.
+     * Отфильтровать организации по нескольким критериям.
      *
-     * @param int $buildingId
+     * @param string|null $name
+     * @param array|null $buildingIDs
+     * @param int|null $activityID
      * @return Collection
      */
-    public function getByBuildingID(int $buildingId): Collection;
-
-    /**
-     * Поиск организаций по названию.
-     *
-     * @param string $name
-     * @return Collection
-     */
-    public function searchByName(string $name): Collection;
+    public function filter(?string $name, ?array $buildingIDs, ?int $activityID): Collection;
 }

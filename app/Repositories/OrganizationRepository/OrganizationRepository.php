@@ -1,93 +1,66 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repositories\OrganizationRepository;
 
 use App\Models\Organization;
 use Illuminate\Database\Eloquent\Collection;
 
-/**
- * Репозиторий для сущности Organization.
- */
 class OrganizationRepository implements OrganizationRepositoryInterface
 {
-    /**
-     * Сохранение организации.
-     *
-     * @param Organization $organization
-     * @return void
-     */
-    public function create(Organization $organization): void
-    {
-        $organization->save();
-    }
+
 
     /**
-     * Получить организацию с телефонами по ID.
+     * Найти организацию по ID.
      *
      * @param int $id
      * @return Organization
      */
-    public function getByID(int $id): Organization
+    public function first(int $id): Organization
     {
-        return Organization::query()
-            ->leftJoin('organization_phones', 'organization_phones.organization_id', '=', 'organizations.id')
-            ->select('organizations.*')
-            ->where('organizations.id', $id)
-            ->groupBy('organizations.id')
-            ->firstOrFail();
+        return Organization::query()->findOrFail($id);
     }
 
     /**
-     * Получить все организации.
+     * Получить организации по ID здания.
      *
+     * @param int $buildingID
      * @return Collection
      */
-    public function getAll(): Collection
+    public function listByBuildingID(int $buildingID): Collection
     {
-        return Organization::all();
+        return Organization::query()->where('building_id', $buildingID)->get();
     }
 
     /**
-     * Получить все организации в конкретном здании.
+     * Отфильтровать организации по нескольким критериям.
      *
-     * @param int $buildingId
+     * @param string|null $name
+     * @param array|null $buildingIDs
+     * @param int|null $activityID
      * @return Collection
      */
-    public function getByBuildingID(int $buildingId): Collection
+    public function filter(?string $name, ?array $buildingIDs, int|null $activityID): Collection
     {
-        return Organization::query()
-            ->where('building_id', $buildingId)
-            ->get();
-    }
+        $q = Organization::query();
 
-    /**
-     * Поиск организаций по названию.
-     *
-     * @param string $name
-     * @return Collection
-     */
-    public function searchByName(string $name): Collection
-    {
-        return Organization::query()
-            ->where('name', $name)
-            ->get();
-    }
+        if ($name) {
+            $q->where('name', 'LIKE', '%' . str_replace('%', '\%', $name) . '%');
+        }
 
-    public function inRadius(float $lat, float $lng, float $radiusKm): Collection
-    {
-        return Organization::query()
-            ->select('organizations.*')
-            ->join('buildings', 'buildings.id', '=', 'organizations.building_id')
-            ->selectRaw(
-                '(6371 * 2 * ASIN(SQRT(
-                POWER(SIN(RADIANS(? - buildings.latitude)/2), 2) +
-                COS(RADIANS(buildings.latitude)) * COS(RADIANS(?)) *
-                POWER(SIN(RADIANS(? - buildings.longitude)/2), 2)
-            ))) as distance',
-                [$lat, $lat, $lng]
-            )
-            ->having('distance', '<=', $radiusKm)
-            ->orderBy('distance')
-            ->get();
+        if (!empty($buildingIDs)) {
+            $q->whereIn('building_id', $buildingIDs);
+        }
+
+        if (!empty($activityID)) {
+            $q->whereExists(function ($sub) use ($activityID) {
+                $sub->from('organization_activity as oa')
+                    ->whereColumn('oa.organization_id', 'organizations.id')
+                    ->where('oa.activity_id', $activityID);
+            });
+        }
+
+        return $q->get();
     }
 }

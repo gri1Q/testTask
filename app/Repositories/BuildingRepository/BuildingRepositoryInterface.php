@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repositories\BuildingRepository;
 
 use App\Models\Building;
@@ -8,15 +10,14 @@ use Illuminate\Database\Eloquent\Collection;
 interface BuildingRepositoryInterface
 {
     /**
-     * Добавить здание.
+     * Получить все здания.
      *
-     * @param Building $building
-     * @return void
+     * @return Collection<Building>
      */
-    public function create(Building $building): void;
+    public function list(): Collection;
 
     /**
-     * Получить здание по ID.
+     * Получить здание по ID (404 при отсутствии).
      *
      * @param int $id
      * @return Building
@@ -24,9 +25,19 @@ interface BuildingRepositoryInterface
     public function getByID(int $id): Building;
 
     /**
-     * Получить все здания.
+     * Найти здание по ID (404 при отсутствии).
+     * Аналог findOrFail для единообразия с сервисом.
      *
-     * @return Collection
+     * @param int $id
+     * @return Building
      */
-    public function list(): Collection;
+    public function first(int $id): Building;
+
+    /**
+     * Получить здания по списку ID.
+     *
+     * @param array<int> $ids
+     * @return Collection<Building>
+     */
+    public function getByIDs(array $ids): Collection;
 }

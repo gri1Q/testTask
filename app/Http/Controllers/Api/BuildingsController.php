@@ -7,19 +7,15 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Services\BuildingService;
 use App\Services\DTO\Building\BuildingItem;
-use App\Services\DTO\Building\SearchBuildingsByRadiusRequest;
 use Generated\DTO\Building as GeneratedBuilding;
 use Generated\DTO\Error;
 use Generated\DTO\GetBuildingResponse as GeneratedGetBuildingResponse;
 use Generated\DTO\ListBuildingsResponse as GeneratedListBuildingsResponse;
 use Generated\DTO\NoContent404;
 use Generated\DTO\ValidationError;
-use Generated\DTO\ValidationErrorItem;
 use Generated\Http\Controllers\BuildingsApiInterface;
-use Illuminate\Contracts\Validation\Validator as ValidatorContract;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Context;
-use Illuminate\Support\Facades\Validator;
 use Throwable;
 
 /**
@@ -82,62 +78,6 @@ class BuildingsController extends Controller implements BuildingsApiInterface
     }
 
     /**
-     * Геопоиск зданий в радиусе.
-     *
-     * @param float $latitude Центральная широта
-     * @param float $longitude Центральная долгота
-     * @param float $radius Радиус поиска в метрах
-     * @return GeneratedListBuildingsResponse|ValidationError|Error Ответ списка зданий или ошибка
-     */
-    public function searchBuildingsInRadius(
-        float $latitude,
-        float $longitude,
-        float $radius,
-    ): GeneratedListBuildingsResponse|ValidationError|Error {
-        $ve = $this->validateOrNull(
-            [
-                'latitude' => $latitude,
-                'longitude' => $longitude,
-                'radius' => $radius,
-            ],
-            [
-                'latitude' => ['required', 'numeric', 'min:-90', 'max:90'],
-                'longitude' => ['required', 'numeric', 'min:-180', 'max:180'],
-                'radius' => ['required', 'numeric', 'min:1'],
-            ],
-            [
-                'latitude.min' => 'Широта не может быть меньше -90.',
-                'latitude.max' => 'Широта не может быть больше 90.',
-                'longitude.min' => 'Долгота не может быть меньше -180.',
-                'longitude.max' => 'Долгота не может быть больше 180.',
-                'radius.min' => 'Радиус должен быть положительным.',
-            ],
-        );
-
-        if ($ve !== null) {
-            return $ve;
-        }
-
-        try {
-            $response = $this->buildingService->searchWithinRadius(
-                new SearchBuildingsByRadiusRequest($latitude, $longitude, $radius),
-            );
-        } catch (Throwable $e) {
-            report($e);
-
-            return new Error('Что то пошло не так');
-        }
-
-        $buildings = array_map(
-            fn(BuildingItem $item): GeneratedBuilding => $this->makeTransportBuilding($item),
-            $response->buildings,
-        );
-
-        return new GeneratedListBuildingsResponse($buildings);
-    }
-
-
-    /**
      * Преобразовать DTO сервиса в транспортный объект.
      *
      * @param BuildingItem $item
@@ -155,41 +95,4 @@ class BuildingsController extends Controller implements BuildingsApiInterface
         );
     }
 
-
-    /**
-     * Валидирует данные и возвращает ошибку или null.
-     *
-     * @param array $data
-     * @param array $rules
-     * @param array $messages
-     * @return ValidationError|null
-     */
-    private function validateOrNull(array $data, array $rules, array $messages = []): ?ValidationError
-    {
-        $validator = Validator::make($data, $rules, $messages);
-        if ($validator->fails()) {
-            return $this->makeValidationError($validator);
-        }
-
-        return null;
-    }
-
-
-    /**
-     * Сформировать объект ошибки валидации из валидатора Laravel.
-     *
-     * @param ValidatorContract $validator
-     * @return ValidationError
-     */
-    private function makeValidationError(ValidatorContract $validator): ValidationError
-    {
-        $errorItems = [];
-        foreach ($validator->errors()->toArray() as $field => $messages) {
-            foreach ($messages as $message) {
-                $errorItems[] = new ValidationErrorItem($message, $field);
-            }
-        }
-
-        return new ValidationError(null, $errorItems);
-    }
 }

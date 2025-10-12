@@ -7,7 +7,7 @@ namespace App\Services\DTO\Building;
 use Illuminate\Support\Carbon;
 
 /**
- * DTO здания для сценариев use case.
+ * DTO здания для сценариев сервиса.
  */
 class BuildingItem
 {

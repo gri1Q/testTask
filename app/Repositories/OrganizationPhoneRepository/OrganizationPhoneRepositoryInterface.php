@@ -1,34 +1,28 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repositories\OrganizationPhoneRepository;
 
-use App\Models\OrganizationPhone;
 use Illuminate\Database\Eloquent\Collection;
 
 interface OrganizationPhoneRepositoryInterface
 {
-    /**
-     * Создать телефон для организации.
-     *
-     * @param int $organizationId
-     * @param string $number
-     * @return OrganizationPhone
-     */
-    public function create(int $organizationId, string $number): OrganizationPhone;
+
 
     /**
      * Получить все телефоны организации.
      *
-     * @param int $organizationId
+     * @param int $organizationID
      * @return Collection
      */
-    public function allByOrganization(int $organizationId): Collection;
+    public function allByOrganization(int $organizationID): Collection;
 
     /**
-     * Найти телефоны по номеру.
+     * Получить все телефоны по IDs организаций.
      *
-     * @param string $phone
+     * @param array $organizationIDs
      * @return Collection
      */
-    public function searchByNumber(string $phone): Collection;
+    public function getPhonesByOrganizationIDs(array $organizationIDs): Collection;
 }

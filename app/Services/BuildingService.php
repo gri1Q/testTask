@@ -9,8 +9,10 @@ use App\Repositories\BuildingRepository\BuildingRepositoryInterface;
 use App\Services\DTO\Building\BuildingItem;
 use App\Services\DTO\Building\GetBuildingResponse;
 use App\Services\DTO\Building\ListBuildingsResponse;
-use App\Services\DTO\Building\SearchBuildingsByRadiusRequest;
 
+/**
+ * Сервис для работы со зданиями.
+ */
 class BuildingService
 {
     public function __construct(private BuildingRepositoryInterface $buildingRepository)
@@ -18,42 +20,41 @@ class BuildingService
     }
 
     /**
-     * Получить список зданий.
+     * Получить список всех зданий.
+     *
+     * @return ListBuildingsResponse
      */
     public function listBuildings(): ListBuildingsResponse
     {
         $records = $this->buildingRepository->list();
-
         return $this->makeListResponse($records);
     }
 
     /**
-     * Получить здание по идентификатору.
+     * Получить одно здание по ID.
+     *
+     * @param int $buildingID
+     * @return GetBuildingResponse
      */
     public function getBuilding(int $buildingID): GetBuildingResponse
     {
         $building = $this->buildingRepository->getByID($buildingID);
-
         return new GetBuildingResponse($this->makeItem($building));
     }
 
     /**
-     * Найти здания в пределах радиуса.
+     * Проверить существование здания и вернуть модель.
+     *
+     * @param int $buildingID
+     * @return Building
      */
-    public function searchWithinRadius(SearchBuildingsByRadiusRequest $request): ListBuildingsResponse
+    public function first(int $buildingID): Building
     {
-        $records = $this->buildingRepository->searchWithinRadius(
-            $request->latitude,
-            $request->longitude,
-            $request->radiusMeters,
-        );
-
-        return $this->makeListResponse($records);
+        return $this->buildingRepository->first($buildingID);
     }
 
-
     /**
-     * Собрать ответ со списком зданий.
+     * Преобразовать список моделей зданий в транспортный ответ.
      *
      * @param iterable $records
      * @return ListBuildingsResponse
@@ -61,16 +62,17 @@ class BuildingService
     private function makeListResponse(iterable $records): ListBuildingsResponse
     {
         $items = [];
-
         foreach ($records as $record) {
             $items[] = $this->makeItem($record);
         }
-
         return new ListBuildingsResponse($items);
     }
 
     /**
-     * Построить сервисный DTO здания.
+     * Преобразовать модель в транспортный DTO BuildingItem.
+     *
+     * @param Building $building
+     * @return BuildingItem
      */
     private function makeItem(Building $building): BuildingItem
     {
