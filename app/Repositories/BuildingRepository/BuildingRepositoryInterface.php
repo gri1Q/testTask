@@ -28,5 +28,5 @@ interface BuildingRepositoryInterface
      *
      * @return Collection
      */
-    public function getAll(): Collection;
+    public function list(): Collection;
 }

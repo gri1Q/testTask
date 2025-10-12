@@ -37,7 +37,7 @@ class BuildingRepository implements BuildingRepositoryInterface
      *
      * @return Collection
      */
-    public function getAll(): Collection
+    public function list(): Collection
     {
         return Building::all();
     }

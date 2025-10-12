@@ -11,27 +11,110 @@ paths:
       tags: [ Buildings ]
       operationId: listBuildings
       summary: Получить список зданий
-      description: >
-        Возвращает справочник зданий, в которых располагаются организации.
-      x-lg-middleware:
-        - static.api.key
+      description: Возвращает список доступных зданий с координатами.
       responses:
         '200':
           description: OK — список зданий получен.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BuildingCollectionResponse'
-        '401':
-          description: Unauthorized — неверный или отсутствует API-ключ.
+                $ref: '#/components/schemas/ListBuildingsResponse'
+        '400':
+          description: Validation Error — входные данные не прошли валидацию.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
         '500':
           description: Internal Server Error — непредвиденная ошибка на сервере.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-      security:
-        - staticApiKey: [ ]
+
+  /buildings/{id}:
+    get:
+      tags: [ Buildings ]
+      operationId: getBuilding
+      summary: Получить информацию о здании
+      description: Возвращает данные здания по идентификатору.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Идентификатор здания.
+          schema:
+            type: integer
+          example: 1
+      responses:
+        '200':
+          description: OK — здание найдено.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetBuildingResponse'
+        '404':
+          description: Not Found — здание не найдено.
+        '500':
+          description: Internal Server Error — непредвиденная ошибка на сервере.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /buildings/search/circle:
+    get:
+      tags: [ Buildings ]
+      operationId: searchBuildingsInRadius
+      summary: Геопоиск зданий по радиусу
+      description: Находит здания в пределах заданного радиуса от точки.
+      parameters:
+        - name: latitude
+          in: query
+          required: true
+          description: Центральная широта.
+          schema:
+            type: number
+            format: double
+            minimum: -90
+            maximum: 90
+        - name: longitude
+          in: query
+          required: true
+          description: Центральная долгота.
+          schema:
+            type: number
+            format: double
+            minimum: -180
+            maximum: 180
+        - name: radius
+          in: query
+          required: true
+          description: Радиус поиска в метрах.
+          schema:
+            type: number
+            format: double
+            minimum: 1
+          example: 500
+      responses:
+        '200':
+          description: OK — найдены здания в радиусе.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListBuildingsResponse'
+        '400':
+          description: Validation Error — входные данные не прошли валидацию.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '500':
+          description: Internal Server Error — непредвиденная ошибка на сервере.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
 components:
   securitySchemes:
@@ -42,145 +125,6 @@ components:
       description: >
         Статический API-ключ, передаваемый в заголовке `X-API-Key`.
   schemas:
-    OrganizationActivity:
-      type: object
-      required: [ id, name ]
-      properties:
-        id:
-          type: integer
-        name:
-          type: string
-        parent_id:
-          type: integer
-          nullable: true
-        depth:
-          type: integer
-          minimum: 1
-          maximum: 3
-          description: Уровень вложенности (1..3)
-    ActivityTreeNode:
-      type: object
-      required: [ id, name, depth, children ]
-      properties:
-        id:
-          type: integer
-        name:
-          type: string
-        depth:
-          type: integer
-          minimum: 1
-          maximum: 3
-        children:
-          type: array
-          items:
-            $ref: '#/components/schemas/ActivityTreeNode'
-
-    OrganizationBuilding:
-      type: object
-      description: Здание, в котором располагается организация.
-      required: [ id, name, latitude, longitude ]
-      properties:
-        id:
-          type: integer
-          description: Идентификатор здания.
-        name:
-          type: string
-          description: Название здания.
-        address:
-          type: string
-          nullable: true
-          description: Адрес здания.
-        latitude:
-          type: number
-          format: double
-          description: Широта.
-        longitude:
-          type: number
-          format: double
-          description: Долгота.
-
-    Organization:
-      type: object
-      description: Организация с информацией о расположении и видах деятельности.
-      required: [ id, name, building, activities, phone_numbers ]
-      properties:
-        id:
-          type: integer
-        name:
-          type: string
-        description:
-          type: string
-          nullable: true
-        phone_numbers:
-          type: array
-          items:
-            type: string
-            description: Телефон в формате E.164 или локальном формате
-          minItems: 1
-        distance_meters:
-          type: number
-          format: double
-          nullable: true
-        building:
-          $ref: '#/components/schemas/OrganizationBuilding'
-        activities:
-          type: array
-          items:
-            $ref: '#/components/schemas/OrganizationActivity'
-          minItems: 1
-
-    OrganizationCollectionResponse:
-      type: object
-      description: Ответ со списком организаций.
-      required: [ organizations ]
-      properties:
-        organizations:
-          type: array
-          items:
-            $ref: '#/components/schemas/Organization'
-
-    OrganizationResponse:
-      type: object
-      description: Ответ с одной организацией.
-      required: [ organization ]
-      properties:
-        organization:
-          $ref: '#/components/schemas/Organization'
-
-    Building:
-      type: object
-      description: Здание из справочника.
-      required: [ id, name, latitude, longitude ]
-      properties:
-        id:
-          type: integer
-          description: Идентификатор здания.
-        name:
-          type: string
-          description: Название здания.
-        address:
-          type: string
-          nullable: true
-          description: Почтовый адрес здания.
-        latitude:
-          type: number
-          format: double
-          description: Географическая широта здания.
-        longitude:
-          type: number
-          format: double
-          description: Географическая долгота здания.
-
-    BuildingCollectionResponse:
-      type: object
-      description: Ответ со списком зданий.
-      required: [ buildings ]
-      properties:
-        buildings:
-          type: array
-          items:
-            $ref: '#/components/schemas/Building'
-
     ValidationError:
       type: object
       description: Стандартизированный формат ошибки.
@@ -194,6 +138,7 @@ components:
           nullable: true
           items:
             $ref: '#/components/schemas/ValidationErrorItem'
+
     ValidationErrorItem:
       type: object
       required: [ message ]
@@ -215,3 +160,54 @@ components:
           type: string
           description: Человеческое описание проблемы.
           example: "Что то пошло не так."
+
+    Building:
+      type: object
+      description: Информация о здании с координатами.
+      required: [ id, address, latitude, longitude, created_at, updated_at ]
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Уникальный идентификатор здания.
+          example: 42
+        address:
+          type: string
+          description: Почтовый адрес здания.
+          example: "Москва, ул. Льва Толстого, 16"
+        latitude:
+          type: number
+          format: double
+          description: Географическая широта.
+          example: 55.733969
+        longitude:
+          type: number
+          format: double
+          description: Географическая долгота.
+          example: 37.588144
+        created_at:
+          type: string
+          format: date-time
+          description: Дата создания записи.
+        updated_at:
+          type: string
+          format: date-time
+          description: Дата обновления записи.
+
+    GetBuildingResponse:
+      type: object
+      description: Ответ с данными одного здания.
+      required: [ building ]
+      properties:
+        building:
+          $ref: '#/components/schemas/Building'
+
+    ListBuildingsResponse:
+      type: object
+      description: Ответ со списком зданий.
+      required: [ buildings ]
+      properties:
+        buildings:
+          type: array
+          items:
+            $ref: '#/components/schemas/Building'
