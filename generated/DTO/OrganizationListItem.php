@@ -19,28 +19,33 @@
 
 
 /**
- * Error
+ * OrganizationListItem
  */
 namespace Generated\DTO;
 
 /**
- * Error
+ * OrganizationListItem
+ * @description Запись в выдаче списка организаций.
  */
 
 use Crell\Serde\Attributes as Serde;
 use Crell\Serde\Renaming\Cases;
 
 #[Serde\ClassSettings(renameWith: Cases::snake_case)]
-class Error
+class OrganizationListItem
 {
     /**
     *
-    * Человеческое описание проблемы.
-    * @param string $message
+    *
+    * @param \Generated\DTO\Organization $organization
+    *
+    * Расстояние до организации в метрах, если задан поиск по координатам.
+    * @param null | float $distanceMeters
     */
 
    public function __construct(
-       public string $message,
+       public \Generated\DTO\Organization $organization,
+       public ?float $distanceMeters = null,
    ) {}
 }
 

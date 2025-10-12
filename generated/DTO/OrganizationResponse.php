@@ -19,28 +19,29 @@
 
 
 /**
- * Error
+ * OrganizationResponse
  */
 namespace Generated\DTO;
 
 /**
- * Error
+ * OrganizationResponse
+ * @description Ответ с подробной информацией об организации.
  */
 
 use Crell\Serde\Attributes as Serde;
 use Crell\Serde\Renaming\Cases;
 
 #[Serde\ClassSettings(renameWith: Cases::snake_case)]
-class Error
+class OrganizationResponse
 {
     /**
     *
-    * Человеческое описание проблемы.
-    * @param string $message
+    *
+    * @param \Generated\DTO\Organization $organization
     */
 
    public function __construct(
-       public string $message,
+       public \Generated\DTO\Organization $organization,
    ) {}
 }
 

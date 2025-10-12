@@ -16,6 +16,6 @@
         </include>
     </coverage>
     <php>
-        <ini name="error_reporting" value="E_ALL"/>
+        <ini name="error_reporting" value="E_ALL" />
     </php>
 </phpunit>

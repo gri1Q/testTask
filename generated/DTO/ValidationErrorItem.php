@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 /**
  * Example API
@@ -23,7 +21,6 @@ declare(strict_types=1);
 /**
  * ValidationErrorItem
  */
-
 namespace Generated\DTO;
 
 /**
@@ -37,18 +34,17 @@ use Crell\Serde\Renaming\Cases;
 class ValidationErrorItem
 {
     /**
-     *
-     * Человеческое описание проблемы.
-     * @param string $message
-     *
-     * Имя поля, к которому относится ошибка.
-     * @param string $field
-     */
+    *
+    * Человеческое описание проблемы.
+    * @param string $message
+    *
+    * Имя поля, к которому относится ошибка.
+    * @param string $field
+    */
 
-    public function __construct(
-        public string $message,
-        public string $field,
-    ) {
-    }
+   public function __construct(
+       public string $message,
+       public string $field,
+   ) {}
 }
 

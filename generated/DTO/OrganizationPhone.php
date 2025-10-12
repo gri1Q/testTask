@@ -19,28 +19,37 @@
 
 
 /**
- * Error
+ * OrganizationPhone
  */
 namespace Generated\DTO;
 
 /**
- * Error
+ * OrganizationPhone
+ * @description Контактный телефон организации.
  */
 
 use Crell\Serde\Attributes as Serde;
 use Crell\Serde\Renaming\Cases;
 
 #[Serde\ClassSettings(renameWith: Cases::snake_case)]
-class Error
+class OrganizationPhone
 {
     /**
     *
-    * Человеческое описание проблемы.
-    * @param string $message
+    * Идентификатор записи телефона.
+    * @param int $id
+    *
+    * Телефонный номер в произвольном формате.
+    * @param string $number
+    *
+    * Пояснение или тип телефона.
+    * @param null | string $description
     */
 
    public function __construct(
-       public string $message,
+       public int $id,
+       public string $number,
+       public ?string $description = null,
    ) {}
 }
 

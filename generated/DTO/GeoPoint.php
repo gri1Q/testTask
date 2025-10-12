@@ -19,28 +19,33 @@
 
 
 /**
- * Error
+ * GeoPoint
  */
 namespace Generated\DTO;
 
 /**
- * Error
+ * GeoPoint
+ * @description Географическая точка с координатами в системе.
  */
 
 use Crell\Serde\Attributes as Serde;
 use Crell\Serde\Renaming\Cases;
 
 #[Serde\ClassSettings(renameWith: Cases::snake_case)]
-class Error
+class GeoPoint
 {
     /**
     *
-    * Человеческое описание проблемы.
-    * @param string $message
+    * Широта в градусах.
+    * @param float $latitude
+    *
+    * Долгота в градусах.
+    * @param float $longitude
     */
 
    public function __construct(
-       public string $message,
+       public float $latitude,
+       public float $longitude,
    ) {}
 }
 

@@ -19,28 +19,30 @@
 
 
 /**
- * Error
+ * ListOrganizationsResponse
  */
 namespace Generated\DTO;
 
 /**
- * Error
+ * ListOrganizationsResponse
+ * @description Ответ со списком организаций, удовлетворяющих фильтрам.
  */
 
 use Crell\Serde\Attributes as Serde;
 use Crell\Serde\Renaming\Cases;
 
 #[Serde\ClassSettings(renameWith: Cases::snake_case)]
-class Error
+class ListOrganizationsResponse
 {
     /**
     *
-    * Человеческое описание проблемы.
-    * @param string $message
+    *
+    * @param \Generated\DTO\OrganizationListItem[] $organizations
     */
 
    public function __construct(
-       public string $message,
+       #[Serde\SequenceField(arrayType: \Generated\DTO\OrganizationListItem::class)]
+       public array $organizations,
    ) {}
 }
 
