@@ -10,8 +10,6 @@ DTO/ValidationError.php
 DTO/ValidationErrorItem.php
 Http/Controllers/BuildingsApiInterface.php
 Http/Controllers/BuildingsController.php
-Http/Controllers/OrganizationsApiInterface.php
-Http/Controllers/OrganizationsController.php
 README.md
 composer.json
 phpunit.xml.dist

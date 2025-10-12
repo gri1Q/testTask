@@ -53,4 +53,20 @@ interface BuildingsApiInterface {
         \Generated\DTO\Error
     ;
 
+
+    /**
+     * Operation listOrganizationsInBuilding
+     *
+     * Получить список организаций в здании
+     * @param int $id
+     * @return \Generated\DTO\ListOrganizationsInBuildingResponse | \Generated\DTO\NoContent404 | \Generated\DTO\Error
+     */
+    public function listOrganizationsInBuilding(
+            int $id,
+    ):
+        \Generated\DTO\ListOrganizationsInBuildingResponse | 
+        \Generated\DTO\NoContent404 | 
+        \Generated\DTO\Error
+    ;
+
 }

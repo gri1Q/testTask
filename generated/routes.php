@@ -43,7 +43,7 @@ Route::GET('/api/buildings', [\Generated\Http\Controllers\BuildingsController::c
  * Summary: Получить список организаций в здании
  * Notes: Возвращает список организаций, зарегистрированных в указанном здании.
  */
-Route::GET('/api/buildings/{id}/organizations', [\Generated\Http\Controllers\OrganizationsController::class, 'listOrganizationsInBuilding'])
+Route::GET('/api/buildings/{id}/organizations', [\Generated\Http\Controllers\BuildingsController::class, 'listOrganizationsInBuilding'])
     ->middleware('api.key')
 ->name('');
 
