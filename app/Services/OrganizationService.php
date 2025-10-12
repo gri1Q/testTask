@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Repositories\OrganizationPhoneRepository\OrganizationPhoneRepositoryInterface;
 use App\Repositories\OrganizationRepository\OrganizationRepositoryInterface;
+use App\Services\DTO\Activity\ActivityDTO;
+use App\Services\DTO\Building\BuildingItem;
 use Illuminate\Support\Collection as SupportCollection;
 
 class OrganizationService
@@ -67,18 +69,19 @@ class OrganizationService
                 continue;
             }
 
-            $buildingDTO = new BuildingDTO(
+            $buildingDTO = new BuildingItem(
                 $building->id,
-                $building->name,
                 $building->address,
                 (float)$building->latitude,
                 (float)$building->longitude,
+                $building->created_at,
+                $building->updated_at,
             );
 
             $activityDTOs = $this->makeActivityDTOs($activities[$organization->id] ?? [], $activityList);
             $phoneDTOs = $this->makePhoneDTOs($phones[$organization->id] ?? []);
 
-            $distance = $organization->getAttribute('distance_km'); // см. репозиторий: выставим alias distance_km
+            $distance = $organization->getAttribute('distance_km');
             $distanceValue = $distance !== null ? (float)$distance : null;
 
             $items[] = new OrganizationListItem(
@@ -108,12 +111,13 @@ class OrganizationService
 
         $activityList = $this->activityService->getByIDs($activityIDs)->keyBy('id');
 
-        $buildingDTO = new BuildingDTO(
+        $buildingDTO = new BuildingItem(
             $building->id,
-            $building->name,
             $building->address,
             (float)$building->latitude,
             (float)$building->longitude,
+            $building->created_at,
+            $building->updated_at,
         );
 
         $activityDTOs = $this->makeActivityDTOs($activityIDs, $activityList);
@@ -148,7 +152,7 @@ class OrganizationService
             $activityDTOs[] = new ActivityDTO(
                 $activity->id,
                 $activity->name,
-                $activity->depth,
+                $activity->level,
                 $activity->parent_id,
             );
         }

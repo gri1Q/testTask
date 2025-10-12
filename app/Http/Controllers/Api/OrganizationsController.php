@@ -5,19 +5,23 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Services\OrganizationService;
 use Generated\DTO\Error;
+use Generated\DTO\ListOrganizationsRequest;
 use Generated\DTO\ListOrganizationsResponse;
 use Generated\DTO\NoContent401;
 use Generated\DTO\NoContent404;
 use Generated\DTO\OrganizationResponse;
 use Generated\DTO\ValidationError;
 use Generated\Http\Controllers\OrganizationsApiInterface;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class OrganizationsController extends Controller implements OrganizationsApiInterface
 {
-    public function __construct(private OrganizationService $organizationService)
-    {
+    public function __construct(
+        private OrganizationService $organizationService,
+    ) {}
 
-    }
     /**
      * Список организаций с фильтрами и пагинацией.
      */
@@ -69,7 +73,7 @@ class OrganizationsController extends Controller implements OrganizationsApiInte
                 'page.integer' => 'Номер страницы должен быть целым числом.',
                 'page.min' => 'Номер страницы начинается с 1.',
                 'per_page.integer' => 'Размер страницы должен быть целым числом.',
-                'per_page.min' => 'Размер страницы должен быть не меньше 1.',
+                'per_page.min' => 'Размер страницы не меньше 1.',
                 'per_page.max' => 'Размер страницы не может превышать 50 записей.',
             ],
         );
@@ -78,8 +82,9 @@ class OrganizationsController extends Controller implements OrganizationsApiInte
             return $validationError;
         }
 
+        // Проверка на частично заполненные геопараметры
         $geoParameters = [$latitude, $longitude, $radius];
-        $filledGeoParameters = array_filter($geoParameters, static fn($value) => $value !== null);
+        $filledGeoParameters = array_filter($geoParameters, static fn($v) => $v !== null);
         if ($filledGeoParameters !== [] && count($filledGeoParameters) !== 3) {
             return new ValidationError('Для геопоиска укажите широту, долготу и радиус.');
         }
@@ -98,19 +103,23 @@ class OrganizationsController extends Controller implements OrganizationsApiInte
                     $radius,
                     $pageValue,
                     $perPageValue,
-                ),
+                )
             );
-        }
         } catch (Throwable $exception) {
-            Context::add('building_id', $buildingId);
-            Context::add('activity_id', $activityId);
-            Context::add('search', $search);
-            Context::add('latitude', $latitude);
-            Context::add('longitude', $longitude);
-            Context::add('radius', $radius);
+            // Используем стандартный логгер, чтобы избежать неопределённого Context::add
+            Log::withContext([
+                'building_id' => $buildingId,
+                'activity_id' => $activityId,
+                'search'      => $search,
+                'latitude'    => $latitude,
+                'longitude'   => $longitude,
+                'radius'      => $radius,
+                'page'        => $pageValue,
+                'per_page'    => $perPageValue,
+            ]);
             report($exception);
 
-            return new Error('Что то пошло не так');
+            return new Error('Что-то пошло не так.');
         }
     }
 
@@ -119,21 +128,15 @@ class OrganizationsController extends Controller implements OrganizationsApiInte
      */
     public function getOrganization(int $id): OrganizationResponse|NoContent401|NoContent404|Error
     {
-
-
         try {
             return $this->organizationService->getOrganization($id);
         } catch (ModelNotFoundException $exception) {
-            if ($exception->getModel() === Building::class) {
-                return new NoContent404();
-            }
-
             return new NoContent404();
         } catch (Throwable $exception) {
-            Context::add('organization_id', $id);
+            Log::withContext(['organization_id' => $id]);
             report($exception);
 
-            return new Error('Что то пошло не так');
+            return new Error('Что-то пошло не так.');
         }
     }
 }
