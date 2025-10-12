@@ -96,7 +96,38 @@ paths:
                 $ref: '#/components/schemas/Error'
       security:
         - apiKeyAuth: [ ]
-
+  /organizations/{id}:
+    get:
+      tags: [ Organizations ]
+      operationId: getOrganization
+      summary: Получить организацию по ID
+      description: Возвращает полную информацию об организации по её идентификатору.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Идентификатор организации.
+          schema:
+            type: integer
+            minimum: 1
+          example: 1001
+      responses:
+        '200':
+          description: OK — организация найдена.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationResponse'
+        '404':
+          description: Not Found — организация не найдена.
+        '500':
+          description: Internal Server Error — непредвиденная ошибка на сервере.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - apiKeyAuth: [ ]
 
 components:
   securitySchemes:
@@ -274,3 +305,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Organization'
+    OrganizationResponse:
+      type: object
+      description: Ответ с подробной информацией об организации.
+      required: [ organization ]
+      properties:
+        organization:
+          $ref: '#/components/schemas/Organization'

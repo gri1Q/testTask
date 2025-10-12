@@ -25,6 +25,22 @@ interface OrganizationsApiInterface {
 
 
     /**
+     * Operation getOrganization
+     *
+     * Получить организацию по ID
+     * @param int $id
+     * @return \Generated\DTO\OrganizationResponse | \Generated\DTO\NoContent404 | \Generated\DTO\Error
+     */
+    public function getOrganization(
+            int $id,
+    ):
+        \Generated\DTO\OrganizationResponse | 
+        \Generated\DTO\NoContent404 | 
+        \Generated\DTO\Error
+    ;
+
+
+    /**
      * Operation listOrganizationsInBuilding
      *
      * Получить список организаций в здании

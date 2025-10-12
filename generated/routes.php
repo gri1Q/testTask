@@ -39,6 +39,15 @@ Route::GET('/api/buildings', [\Generated\Http\Controllers\BuildingsController::c
 ->name('');
 
 /**
+ * GET getOrganization
+ * Summary: Получить организацию по ID
+ * Notes: Возвращает полную информацию об организации по её идентификатору.
+ */
+Route::GET('/api/organizations/{id}', [\Generated\Http\Controllers\OrganizationsController::class, 'getOrganization'])
+    ->middleware('api.key')
+->name('');
+
+/**
  * GET listOrganizationsInBuilding
  * Summary: Получить список организаций в здании
  * Notes: Возвращает список организаций, зарегистрированных в указанном здании.

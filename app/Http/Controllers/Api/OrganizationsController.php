@@ -11,6 +11,7 @@ use Generated\DTO\Error;
 use Generated\DTO\ListOrganizationsInBuildingResponse;
 use Generated\DTO\NoContent404;
 use Generated\DTO\Organization as GeneratedOrganization;
+use Generated\DTO\OrganizationResponse as GeneratedOrganizationResponse;
 use Generated\Http\Controllers\OrganizationsApiInterface;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Throwable;
@@ -41,6 +42,29 @@ class OrganizationsController extends Controller implements OrganizationsApiInte
         );
 
         return new ListOrganizationsInBuildingResponse($organizations);
+    }
+
+    /**
+     * Получить организацию по её идентификатору.
+     *
+     * @param int $id
+     * @return GeneratedOrganizationResponse|NoContent404|Error
+     */
+    public function getOrganization(int $id): GeneratedOrganizationResponse|NoContent404|Error
+    {
+        try {
+            $item = $this->organizationService->getOrganization($id);
+        } catch (ModelNotFoundException $e) {
+            return new NoContent404;
+        } catch (Throwable $e) {
+            report($e);
+
+            return new Error('Что то пошло не так');
+        }
+
+        $organization = $this->makeTransportOrganization($item);
+
+        return new GeneratedOrganizationResponse($organization);
     }
 
     /**

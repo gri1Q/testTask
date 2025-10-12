@@ -65,6 +65,50 @@ class OrganizationService
         return new ListOrganizationsInBuildingResult($items);
     }
 
+    /**
+     * Получить одну организацию по её идентификатору, включая телефоны и виды деятельности.
+     *
+     * @param int $organizationId
+     * @return OrganizationItem
+     */
+    public function getOrganization(int $organizationId): OrganizationItem
+    {
+        $organization = $this->organizationRepository->first($organizationId) ?? null;
+
+        $phones = $this->organizationPhoneRepository
+            ->getPhonesByOrganizationIDs([$organization->id])
+            ->pluck('phone')
+            ->values()
+            ->all();
+
+        $links = $this->organizationActivityRepository->getOrganizationActivityByOrganizationIDs([$organization->id]);
+        $activityIds = $links->pluck('activity_id')->unique()->values()->all();
+
+        $activities = collect();
+        if (!empty($activityIds)) {
+            $activities = $this->activityService
+                ->getByIDs($activityIds)
+                ->map(fn($act) => new ActivityItem(
+                    $act->id,
+                    $act->name,
+                    $act->level,
+                    $act->parent_id
+                ))
+                ->values();
+        }
+
+        return new OrganizationItem(
+            organizationID: $organization->id,
+            name: $organization->name,
+            buildingID: $organization->building_id,
+            description: $organization->description,
+            email: $organization->email,
+            phones: $phones,
+            activities: $activities->all(),
+            createdAt: $organization->created_at,
+            updatedAt: $organization->updated_at,
+        );
+    }
 
     /**
      * Получить список организаций по ID здания.
@@ -72,7 +116,7 @@ class OrganizationService
      * @param int $buildingId
      * @return Collection
      */
-    protected function getOrganizationsByBuilding(int $buildingId): Collection
+    private function getOrganizationsByBuilding(int $buildingId): Collection
     {
         return $this->organizationRepository->listByBuildingID($buildingId);
     }
@@ -83,7 +127,7 @@ class OrganizationService
      * @param array $organizationIds
      * @return array
      */
-    protected function getPhonesGroupedByOrganization(array $organizationIds): array
+    private function getPhonesGroupedByOrganization(array $organizationIds): array
     {
         return $this->organizationPhoneRepository
             ->getPhonesByOrganizationIDs($organizationIds)
@@ -99,7 +143,7 @@ class OrganizationService
      * @param array $organizationIds
      * @return array
      */
-    protected function getActivitiesGroupedByOrganization(array $organizationIds): array
+    private function getActivitiesGroupedByOrganization(array $organizationIds): array
     {
         $links = $this->organizationActivityRepository->getOrganizationActivityByOrganizationIDs($organizationIds);
         $activityIds = $links->pluck('activity_id')->unique()->values()->all();
