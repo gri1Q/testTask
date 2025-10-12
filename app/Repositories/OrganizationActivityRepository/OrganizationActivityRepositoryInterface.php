@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repositories\OrganizationActivityRepository;
 
 use Illuminate\Database\Eloquent\Collection;

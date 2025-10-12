@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Repositories\OrganizationActivityRepository\OrganizationActivityRepositoryInterface;
@@ -159,6 +161,7 @@ class OrganizationService
 
         return new ListOrganizationsInBuildingResult($items);
     }
+
     /**
      * Получить список организаций по ID здания.
      *

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repositories\OrganizationRepository;
 
 use App\Models\Organization;
@@ -10,6 +12,8 @@ class OrganizationRepository implements OrganizationRepositoryInterface
 
 
     /**
+     * Найти организацию по ID.
+     *
      * @param int $id
      * @return Organization
      */
@@ -30,9 +34,11 @@ class OrganizationRepository implements OrganizationRepositoryInterface
     }
 
     /**
+     * Отфильтровать организации по нескольким критериям.
+     *
      * @param string|null $name
      * @param array|null $buildingIDs
-     * @param array|null $activityID
+     * @param int|null $activityID
      * @return Collection
      */
     public function filter(?string $name, ?array $buildingIDs, int|null $activityID): Collection

@@ -17,8 +17,8 @@ class OrganizationItem
      * @param string[]|null $phones Список телефонов
      * @param ActivityItem[]|null $activities Список видов деятельности
      * @param int $buildingID
-     * @param string|null $createdAt
-     * @param string|null $updatedAt
+     * @param DateTimeInterface|null $createdAt
+     * @param DateTimeInterface|null $updatedAt
      */
     public function __construct(
         public int $organizationID,
