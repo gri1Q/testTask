@@ -40,12 +40,12 @@ class OrganizationsController extends Controller
     }
 
     /**
-     * Operation getOrganization
+     * Operation listOrganizationsInBuilding
      *
-     * Получить организацию по ID.
+     * Получить список организаций в здании.
      *
      */
-    public function getOrganization(Request $request, int $id): JsonResponse
+    public function listOrganizationsInBuilding(Request $request, int $id): JsonResponse
     {
         $validator = Validator::make(
             array_merge(
@@ -57,7 +57,6 @@ class OrganizationsController extends Controller
             [
                 'id' => [
                     'required',
-                    'gte:1',
                     'integer',
                 ],
             ],
@@ -69,119 +68,19 @@ class OrganizationsController extends Controller
 
 
         try {
-            $apiResult = $this->api->getOrganization($id);
+            $apiResult = $this->api->listOrganizationsInBuilding($id);
         } catch (\Exception $exception) {
             // This shouldn't happen
             report($exception);
             return response()->json(['error' => $exception->getMessage()], 500);
         }
 
-        if ($apiResult instanceof \Generated\DTO\OrganizationResponse) {
+        if ($apiResult instanceof \Generated\DTO\ListOrganizationsInBuildingResponse) {
             return response()->json($this->serde->serialize($apiResult, format: 'array'), 200);
-        }
-
-        if ($apiResult instanceof \Generated\DTO\NoContent401) {
-            return response()->json($this->serde->serialize($apiResult, format: 'array'), 401);
         }
 
         if ($apiResult instanceof \Generated\DTO\NoContent404) {
             return response()->json($this->serde->serialize($apiResult, format: 'array'), 404);
-        }
-
-        if ($apiResult instanceof \Generated\DTO\Error) {
-            return response()->json($this->serde->serialize($apiResult, format: 'array'), 500);
-        }
-
-
-        // This shouldn't happen
-        return response()->abort(500);
-    }
-    /**
-     * Operation listOrganizations
-     *
-     * Получить список организаций.
-     *
-     */
-    public function listOrganizations(Request $request): JsonResponse
-    {
-        $validator = Validator::make(
-            array_merge(
-                [
-
-                ],
-                $request->all(),
-            ),
-            [
-                'buildingId' => [
-                    'gte:1',
-                    'integer',
-                ],
-                'activityId' => [
-                    'gte:1',
-                    'integer',
-                ],
-                'name' => [
-                    'min:1',
-                    'max:255',
-                    'string',
-                ],
-                'latitude' => [
-                    'gte:-90',
-                    'lte:90',
-                ],
-                'longitude' => [
-                    'gte:-180',
-                    'lte:180',
-                ],
-                'radiusMeters' => [
-                    'gte:1',
-                    'lte:50000',
-                    'integer',
-                ],
-                'limit' => [
-                    'gte:1',
-                    'lte:100',
-                    'integer',
-                ],
-            ],
-        );
-
-        if ($validator->fails()) {
-            return response()->json(['error' => 'Invalid input'], 400);
-        }
-
-        $buildingId = $request->integer('buildingId');
-
-        $activityId = $request->integer('activityId');
-
-        $name = $request->string('name')->value();
-
-        $latitude = $request->float('latitude');
-
-        $longitude = $request->float('longitude');
-
-        $radiusMeters = $request->integer('radiusMeters');
-
-        $limit = $request->integer('limit');
-
-        try {
-            $apiResult = $this->api->listOrganizations($buildingId, $activityId, $name, $latitude, $longitude, $radiusMeters, $limit);
-        } catch (\Exception $exception) {
-            // This shouldn't happen
-            report($exception);
-            return response()->json(['error' => $exception->getMessage()], 500);
-        }
-
-        if ($apiResult instanceof \Generated\DTO\ListOrganizationsResponse) {
-            return response()->json($this->serde->serialize($apiResult, format: 'array'), 200);
-        }
-
-        if ($apiResult instanceof \Generated\DTO\ValidationError) {
-            return response()->json($this->serde->serialize($apiResult, format: 'array'), 400);
-        }
-
-        if ($apiResult instanceof \Generated\DTO\NoContent401) {
-            return response()->json($this->serde->serialize($apiResult, format: 'array'), 401);
         }
 
         if ($apiResult instanceof \Generated\DTO\Error) {

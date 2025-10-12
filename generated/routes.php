@@ -39,20 +39,11 @@ Route::GET('/api/buildings', [\Generated\Http\Controllers\BuildingsController::c
 ->name('');
 
 /**
- * GET getOrganization
- * Summary: Получить организацию по ID
- * Notes: Возвращает подробную информацию об организации, включая здание, телефоны и виды деятельности. Для доступа требуется действующий &#x60;X-API-Key&#x60;.
+ * GET listOrganizationsInBuilding
+ * Summary: Получить список организаций в здании
+ * Notes: Возвращает список организаций, зарегистрированных в указанном здании.
  */
-Route::GET('/api/organizations/{id}', [\Generated\Http\Controllers\OrganizationsController::class, 'getOrganization'])
-    ->middleware('api.key')
-->name('');
-
-/**
- * GET listOrganizations
- * Summary: Получить список организаций
- * Notes: Возвращает список организаций с фильтрами по зданию, деятельности, названию и географическому радиусу поиска. При передаче координат и радиуса организации сортируются по расстоянию от точки. Для доступа требуется действующий &#x60;X-API-Key&#x60;.
- */
-Route::GET('/api/organizations', [\Generated\Http\Controllers\OrganizationsController::class, 'listOrganizations'])
+Route::GET('/api/buildings/{id}/organizations', [\Generated\Http\Controllers\OrganizationsController::class, 'listOrganizationsInBuilding'])
     ->middleware('api.key')
 ->name('');
 

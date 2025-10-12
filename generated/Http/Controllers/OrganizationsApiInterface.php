@@ -25,47 +25,17 @@ interface OrganizationsApiInterface {
 
 
     /**
-     * Operation getOrganization
+     * Operation listOrganizationsInBuilding
      *
-     * Получить организацию по ID
+     * Получить список организаций в здании
      * @param int $id
-     * @return \Generated\DTO\OrganizationResponse | \Generated\DTO\NoContent401 | \Generated\DTO\NoContent404 | \Generated\DTO\Error
+     * @return \Generated\DTO\ListOrganizationsInBuildingResponse | \Generated\DTO\NoContent404 | \Generated\DTO\Error
      */
-    public function getOrganization(
+    public function listOrganizationsInBuilding(
             int $id,
     ):
-        \Generated\DTO\OrganizationResponse | 
-        \Generated\DTO\NoContent401 | 
+        \Generated\DTO\ListOrganizationsInBuildingResponse | 
         \Generated\DTO\NoContent404 | 
-        \Generated\DTO\Error
-    ;
-
-
-    /**
-     * Operation listOrganizations
-     *
-     * Получить список организаций
-     * @param null | int $buildingId
-     * @param null | int $activityId
-     * @param null | string $name
-     * @param null | float $latitude
-     * @param null | float $longitude
-     * @param null | int $radiusMeters
-     * @param null | int $limit
-     * @return \Generated\DTO\ListOrganizationsResponse | \Generated\DTO\ValidationError | \Generated\DTO\NoContent401 | \Generated\DTO\Error
-     */
-    public function listOrganizations(
-            ?int $buildingId,
-            ?int $activityId,
-            ?string $name,
-            ?float $latitude,
-            ?float $longitude,
-            ?int $radiusMeters,
-            ?int $limit,
-    ):
-        \Generated\DTO\ListOrganizationsResponse | 
-        \Generated\DTO\ValidationError | 
-        \Generated\DTO\NoContent401 | 
         \Generated\DTO\Error
     ;
 

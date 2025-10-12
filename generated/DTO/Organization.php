@@ -25,7 +25,7 @@ namespace Generated\DTO;
 
 /**
  * Organization
- * @description Организация каталога с привязкой к зданию и видам деятельности.
+ * @description Информация об организации, находящейся в здании.
  */
 
 use Crell\Serde\Attributes as Serde;
@@ -36,42 +36,36 @@ class Organization
 {
     /**
     *
-    * Идентификатор организации.
+    * Уникальный идентификатор организации.
     * @param int $id
     *
     * Название организации.
     * @param string $name
     *
-    * Почтовый адрес организации (уточнение относительно здания).
-    * @param string $address
+    * ID здания, в котором находится организация.
+    * @param int $buildingId
     *
-    *
-    * @param \Generated\DTO\GeoPoint $location
-    *
-    *
-    * @param \Generated\DTO\Building $building
-    *
-    * Список видов деятельности организации (глубина дерева до 3 уровней).
-    * @param \Generated\DTO\Activity[] $activities
-    *
-    * Контактные телефоны организации.
-    * @param \Generated\DTO\OrganizationPhone[] $phones
-    *
-    * Краткое описание или специализация организации.
+    * Описание организации.
     * @param null | string $description
+    *
+    * Контактный email организации.
+    * @param null | string $email
+    *
+    * Дата создания записи.
+    * @param null | \DateTime $createdAt
+    *
+    * Дата обновления записи.
+    * @param null | \DateTime $updatedAt
     */
 
    public function __construct(
        public int $id,
        public string $name,
-       public string $address,
-       public \Generated\DTO\GeoPoint $location,
-       public \Generated\DTO\Building $building,
-       #[Serde\SequenceField(arrayType: \Generated\DTO\Activity::class)]
-       public array $activities,
-       #[Serde\SequenceField(arrayType: \Generated\DTO\OrganizationPhone::class)]
-       public array $phones,
+       public int $buildingId,
        public ?string $description = null,
+       public ?string $email = null,
+       public ?\DateTime $createdAt = null,
+       public ?\DateTime $updatedAt = null,
    ) {}
 }
 
