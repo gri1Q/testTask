@@ -50,6 +50,7 @@ Route::GET('/api/buildings/search/circle', [\Generated\Http\Controllers\Building
  * Notes: Возвращает подробную информацию об организации, включая здание, телефоны и виды деятельности. Для доступа требуется действующий &#x60;X-API-Key&#x60;.
  */
 Route::GET('/api/organizations/{id}', [\Generated\Http\Controllers\OrganizationsController::class, 'getOrganization'])
+    ->middleware('api.key')
 ->name('');
 
 /**
@@ -58,5 +59,6 @@ Route::GET('/api/organizations/{id}', [\Generated\Http\Controllers\Organizations
  * Notes: Возвращает список организаций с фильтрами по зданию, деятельности, названию и географическому радиусу поиска. При передаче координат и радиуса организации сортируются по расстоянию от точки. Для доступа требуется действующий &#x60;X-API-Key&#x60;.
  */
 Route::GET('/api/organizations', [\Generated\Http\Controllers\OrganizationsController::class, 'listOrganizations'])
+    ->middleware('api.key')
 ->name('');
 
