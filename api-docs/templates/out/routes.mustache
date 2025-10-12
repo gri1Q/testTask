@@ -20,6 +20,9 @@ Route::{{httpMethod}}('{{{basePathWithoutHost}}}{{{path}}}', [\{{controllerPacka
 {{#hasAuthMethods}}
   {{#authMethods}}
     {{#isApiKey}}
+      {{#isKeyInHeader}}
+    ->middleware('api.key')
+      {{/isKeyInHeader}}
       {{#isKeyInCookie}}
     ->middleware('auth:sanctum')
       {{/isKeyInCookie}}

@@ -19,28 +19,29 @@
 
 
 /**
- * Error
+ * NoContent401
  */
 namespace Generated\DTO;
 
 /**
- * Error
+ * NoContent401
+ * @description No content for 401
  */
 
 use Crell\Serde\Attributes as Serde;
 use Crell\Serde\Renaming\Cases;
 
 #[Serde\ClassSettings(renameWith: Cases::snake_case)]
-class Error
+class NoContent401
 {
     /**
     *
-    * Человеческое описание проблемы.
-    * @param string $message
+    * dummy property for no-content responses
+    * @param null | string $dummy
     */
 
    public function __construct(
-       public string $message,
+       public ?string $dummy = null,
    ) {}
 }
 

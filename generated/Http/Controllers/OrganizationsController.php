@@ -27,25 +27,25 @@ use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Validator;
 
 
-class BuildingsController extends Controller
+class OrganizationsController extends Controller
 {
     /**
      * Constructor
      */
     public function __construct(
-        private readonly BuildingsApiInterface $api,
+        private readonly OrganizationsApiInterface $api,
         private readonly SerdeCommon $serde = new SerdeCommon(),
     )
     {
     }
 
     /**
-     * Operation getBuilding
+     * Operation getOrganization
      *
-     * Получить информацию о здании.
+     * Получить организацию по ID.
      *
      */
-    public function getBuilding(Request $request, int $id): JsonResponse
+    public function getOrganization(Request $request, int $id): JsonResponse
     {
         $validator = Validator::make(
             array_merge(
@@ -57,6 +57,7 @@ class BuildingsController extends Controller
             [
                 'id' => [
                     'required',
+                    'gte:1',
                     'integer',
                 ],
             ],
@@ -68,15 +69,19 @@ class BuildingsController extends Controller
 
 
         try {
-            $apiResult = $this->api->getBuilding($id);
+            $apiResult = $this->api->getOrganization($id);
         } catch (\Exception $exception) {
             // This shouldn't happen
             report($exception);
             return response()->json(['error' => $exception->getMessage()], 500);
         }
 
-        if ($apiResult instanceof \Generated\DTO\GetBuildingResponse) {
+        if ($apiResult instanceof \Generated\DTO\OrganizationResponse) {
             return response()->json($this->serde->serialize($apiResult, format: 'array'), 200);
+        }
+
+        if ($apiResult instanceof \Generated\DTO\NoContent401) {
+            return response()->json($this->serde->serialize($apiResult, format: 'array'), 401);
         }
 
         if ($apiResult instanceof \Generated\DTO\NoContent404) {
@@ -92,12 +97,12 @@ class BuildingsController extends Controller
         return response()->abort(500);
     }
     /**
-     * Operation listBuildings
+     * Operation listOrganizations
      *
-     * Получить список зданий.
+     * Получить список организаций.
      *
      */
-    public function listBuildings(Request $request): JsonResponse
+    public function listOrganizations(Request $request): JsonResponse
     {
         $validator = Validator::make(
             array_merge(
@@ -107,66 +112,36 @@ class BuildingsController extends Controller
                 $request->all(),
             ),
             [
-            ],
-        );
-
-        if ($validator->fails()) {
-            return response()->json(['error' => 'Invalid input'], 400);
-        }
-
-        try {
-            $apiResult = $this->api->listBuildings();
-        } catch (\Exception $exception) {
-            // This shouldn't happen
-            report($exception);
-            return response()->json(['error' => $exception->getMessage()], 500);
-        }
-
-        if ($apiResult instanceof \Generated\DTO\ListBuildingsResponse) {
-            return response()->json($this->serde->serialize($apiResult, format: 'array'), 200);
-        }
-
-        if ($apiResult instanceof \Generated\DTO\ValidationError) {
-            return response()->json($this->serde->serialize($apiResult, format: 'array'), 400);
-        }
-
-        if ($apiResult instanceof \Generated\DTO\Error) {
-            return response()->json($this->serde->serialize($apiResult, format: 'array'), 500);
-        }
-
-
-        // This shouldn't happen
-        return response()->abort(500);
-    }
-    /**
-     * Operation searchBuildingsInRadius
-     *
-     * Геопоиск зданий по радиусу.
-     *
-     */
-    public function searchBuildingsInRadius(Request $request): JsonResponse
-    {
-        $validator = Validator::make(
-            array_merge(
-                [
-
+                'buildingId' => [
+                    'gte:1',
+                    'integer',
                 ],
-                $request->all(),
-            ),
-            [
+                'activityId' => [
+                    'gte:1',
+                    'integer',
+                ],
+                'name' => [
+                    'min:1',
+                    'max:255',
+                    'string',
+                ],
                 'latitude' => [
-                    'required',
                     'gte:-90',
                     'lte:90',
                 ],
                 'longitude' => [
-                    'required',
                     'gte:-180',
                     'lte:180',
                 ],
-                'radius' => [
-                    'required',
+                'radiusMeters' => [
                     'gte:1',
+                    'lte:50000',
+                    'integer',
+                ],
+                'limit' => [
+                    'gte:1',
+                    'lte:100',
+                    'integer',
                 ],
             ],
         );
@@ -174,27 +149,39 @@ class BuildingsController extends Controller
         if ($validator->fails()) {
             return response()->json(['error' => 'Invalid input'], 400);
         }
+
+        $buildingId = $request->integer('buildingId');
+
+        $activityId = $request->integer('activityId');
+
+        $name = $request->string('name')->value();
 
         $latitude = $request->float('latitude');
 
         $longitude = $request->float('longitude');
 
-        $radius = $request->float('radius');
+        $radiusMeters = $request->integer('radiusMeters');
+
+        $limit = $request->integer('limit');
 
         try {
-            $apiResult = $this->api->searchBuildingsInRadius($latitude, $longitude, $radius);
+            $apiResult = $this->api->listOrganizations($buildingId, $activityId, $name, $latitude, $longitude, $radiusMeters, $limit);
         } catch (\Exception $exception) {
             // This shouldn't happen
             report($exception);
             return response()->json(['error' => $exception->getMessage()], 500);
         }
 
-        if ($apiResult instanceof \Generated\DTO\ListBuildingsResponse) {
+        if ($apiResult instanceof \Generated\DTO\ListOrganizationsResponse) {
             return response()->json($this->serde->serialize($apiResult, format: 'array'), 200);
         }
 
         if ($apiResult instanceof \Generated\DTO\ValidationError) {
             return response()->json($this->serde->serialize($apiResult, format: 'array'), 400);
+        }
+
+        if ($apiResult instanceof \Generated\DTO\NoContent401) {
+            return response()->json($this->serde->serialize($apiResult, format: 'array'), 401);
         }
 
         if ($apiResult instanceof \Generated\DTO\Error) {

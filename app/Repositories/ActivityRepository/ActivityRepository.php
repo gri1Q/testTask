@@ -10,75 +10,61 @@ use Illuminate\Database\Eloquent\Collection;
  */
 class ActivityRepository implements ActivityRepositoryInterface
 {
-    /**
-     * Создать новый вид деятельности.
-     *
-     * @param Activity $activity
-     * @return void
-     */
-    public function create(Activity $activity): void
-    {
-        $activity->save();
-    }
 
     /**
      * Получить вид деятельности по ID.
      *
-     * @param int $id
+     * @param int $activityID
      * @return Activity
      */
-    public function getByID(int $id): Activity
+    public function first(int $activityID): Activity
     {
-        return Activity::query()->findOrFail($id);
+        return Activity::query()->findOrFail($activityID);
     }
 
-    /**
-     * Получить все виды деятельности.
-     *
-     * @return Collection
-     */
-    public function getAll(): Collection
-    {
-        return Activity::all();
-    }
 
     /**
-     * Получить только корневые виды деятельности.
+     * Получить коллекцию видов деятельности по их ID.
      *
+     * @param array $activityIDs
      * @return Collection
      */
-    public function getRootActivities(): Collection
+    public function getByIDs(array $activityIDs): Collection
     {
-        return Activity::query()
-            ->whereNull('parent_id')
-            ->get();
+        if ($activityIDs === []) {
+            return new Collection();
+        }
+
+        return Activity::query()->whereIn('id', $activityIDs)->get();
     }
 
-    /**
-     * Получить дочерние виды деятельности для указанного родителя.
-     *
-     * @param int $parentId
-     * @return Collection
-     */
-    public function getChildren(int $parentId): Collection
-    {
-        return Activity::query()
-            ->where('parent_id', $parentId)
-            ->get();
-    }
 
     /**
-     * Получить полное дерево видов деятельности (до 3 уровней).
+     * Получить идентификаторы всех дочерних видов деятельности.
      *
-     * @return Collection
+     * @param int $activityID
+     * @return array
      */
-    public function getTree(): Collection
+    public function getDescendantIDs(int $activityID): array
     {
-        return Activity::query()
-            ->where('level', '<=', 3)
-            ->orderBy('level')
-            ->orderBy('id')
-            ->get();
+        $descendantIDs = [];
+        $currentLevel = [$activityID];
+
+        while ($currentLevel !== []) {
+            $children = Activity::query()
+                ->whereIn('parent_id', $currentLevel)
+                ->pluck('id')
+                ->all();
+
+            if ($children === []) {
+                break;
+            }
+
+            $descendantIDs = array_merge($descendantIDs, $children);
+            $currentLevel = $children;
+        }
+
+        return $descendantIDs;
     }
 
 }

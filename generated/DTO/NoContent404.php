@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 /**
  * Example API
@@ -23,7 +21,6 @@ declare(strict_types=1);
 /**
  * NoContent404
  */
-
 namespace Generated\DTO;
 
 /**
@@ -38,14 +35,13 @@ use Crell\Serde\Renaming\Cases;
 class NoContent404
 {
     /**
-     *
-     * dummy property for no-content responses
-     * @param null | string $dummy
-     */
+    *
+    * dummy property for no-content responses
+    * @param null | string $dummy
+    */
 
-    public function __construct(
-        public ?string $dummy = null,
-    ) {
-    }
+   public function __construct(
+       public ?string $dummy = null,
+   ) {}
 }
 

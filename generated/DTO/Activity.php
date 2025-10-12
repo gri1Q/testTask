@@ -19,49 +19,45 @@
 
 
 /**
- * Building
+ * Activity
  */
 namespace Generated\DTO;
 
 /**
- * Building
- * @description Информация о здании с координатами.
+ * Activity
+ * @description Вид деятельности организации в каталоге.
  */
 
 use Crell\Serde\Attributes as Serde;
 use Crell\Serde\Renaming\Cases;
 
 #[Serde\ClassSettings(renameWith: Cases::snake_case)]
-class Building
+class Activity
 {
     /**
     *
-    * Уникальный идентификатор здания.
+    * Идентификатор деятельности.
     * @param int $id
     *
-    * Почтовый адрес здания.
-    * @param string $address
+    * Уникальный символьный код деятельности.
+    * @param string $code
     *
-    * Географическая широта.
-    * @param float $latitude
+    * Название деятельности.
+    * @param string $name
     *
-    * Географическая долгота.
-    * @param float $longitude
+    * Уровень вложенности в дереве (1 — корень, 3 — максимальный допустимый уровень).
+    * @param int $level
     *
-    * Дата создания записи.
-    * @param \DateTime $createdAt
-    *
-    * Дата обновления записи.
-    * @param \DateTime $updatedAt
+    * Идентификатор родительской деятельности.
+    * @param null | int $parentId
     */
 
    public function __construct(
        public int $id,
-       public string $address,
-       public float $latitude,
-       public float $longitude,
-       public \DateTime $createdAt,
-       public \DateTime $updatedAt,
+       public string $code,
+       public string $name,
+       public int $level,
+       public ?int $parentId = null,
    ) {}
 }
 

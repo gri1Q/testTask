@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 /**
  * Example API
@@ -23,7 +21,6 @@ declare(strict_types=1);
 /**
  * GetBuildingResponse
  */
-
 namespace Generated\DTO;
 
 /**
@@ -38,14 +35,13 @@ use Crell\Serde\Renaming\Cases;
 class GetBuildingResponse
 {
     /**
-     *
-     *
-     * @param Building $building
-     */
+    *
+    *
+    * @param \Generated\DTO\Building $building
+    */
 
-    public function __construct(
-        public Building $building,
-    ) {
-    }
+   public function __construct(
+       public \Generated\DTO\Building $building,
+   ) {}
 }
 

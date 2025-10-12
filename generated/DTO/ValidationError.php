@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 /**
  * Example API
@@ -23,7 +21,6 @@ declare(strict_types=1);
 /**
  * ValidationError
  */
-
 namespace Generated\DTO;
 
 /**
@@ -38,19 +35,18 @@ use Crell\Serde\Renaming\Cases;
 class ValidationError
 {
     /**
-     *
-     * Общее сообщение об ошибке. Обычно приходит или оно или errors.
-     * @param null | string $message
-     *
-     *
-     * @param null | ValidationErrorItem[] $errors
-     */
+    *
+    * Общее сообщение об ошибке. Обычно приходит или оно или errors.
+    * @param null | string $message
+    *
+    *
+    * @param null | \Generated\DTO\ValidationErrorItem[] $errors
+    */
 
-    public function __construct(
-        public ?string $message = null,
-        #[Serde\SequenceField(arrayType: ValidationErrorItem::class)]
-        public ?array $errors = null,
-    ) {
-    }
+   public function __construct(
+       public ?string $message = null,
+       #[Serde\SequenceField(arrayType: \Generated\DTO\ValidationErrorItem::class)]
+       public ?array $errors = null,
+   ) {}
 }
 

@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 /**
  * Example API
@@ -23,7 +21,6 @@ declare(strict_types=1);
 /**
  * ListBuildingsResponse
  */
-
 namespace Generated\DTO;
 
 /**
@@ -38,15 +35,14 @@ use Crell\Serde\Renaming\Cases;
 class ListBuildingsResponse
 {
     /**
-     *
-     *
-     * @param Building[] $buildings
-     */
+    *
+    *
+    * @param \Generated\DTO\Building[] $buildings
+    */
 
-    public function __construct(
-        #[Serde\SequenceField(arrayType: Building::class)]
-        public array $buildings,
-    ) {
-    }
+   public function __construct(
+       #[Serde\SequenceField(arrayType: \Generated\DTO\Building::class)]
+       public array $buildings,
+   ) {}
 }
 
