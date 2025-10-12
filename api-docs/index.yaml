@@ -67,7 +67,7 @@ paths:
         - apiKeyAuth: [ ]
   /buildings/{id}/organizations:
     get:
-      tags: [ Buildings ]
+      tags: [ Organizations ]
       operationId: listOrganizationsInBuilding
       summary: Получить список организаций в здании
       description: Возвращает список организаций, зарегистрированных в указанном здании.
