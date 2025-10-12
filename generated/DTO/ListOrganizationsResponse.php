@@ -25,7 +25,6 @@ namespace Generated\DTO;
 
 /**
  * ListOrganizationsResponse
- * @description Ответ со списком организаций, удовлетворяющих фильтрам.
  */
 
 use Crell\Serde\Attributes as Serde;
@@ -37,11 +36,11 @@ class ListOrganizationsResponse
     /**
     *
     *
-    * @param \Generated\DTO\OrganizationListItem[] $organizations
+    * @param \Generated\DTO\Organization[] $organizations
     */
 
    public function __construct(
-       #[Serde\SequenceField(arrayType: \Generated\DTO\OrganizationListItem::class)]
+       #[Serde\SequenceField(arrayType: \Generated\DTO\Organization::class)]
        public array $organizations,
    ) {}
 }

@@ -128,6 +128,55 @@ paths:
                 $ref: '#/components/schemas/Error'
       security:
         - apiKeyAuth: [ ]
+  /organizations:
+    get:
+      tags: [ Organizations ]
+      operationId: listOrganizations
+      summary: Фильтрация и поиск организаций
+      description: >
+        Возвращает список организаций по заданным фильтрам.
+        Если указан `activityID`, по умолчанию включаются дочерние активности до 3 уровня вложенности.
+      parameters:
+        - in: query
+          name: name
+          description: Поиск по названию (подстрока, регистр нечувствителен).
+          schema:
+            type: string
+            minLength: 2
+            maxLength: 255
+        - in: query
+          name: activityID
+          description: Идентификатор вида деятельности. По умолчанию включаются дочерние активности.
+          schema:
+            type: integer
+            minimum: 1
+        - in: query
+          name: buildingID
+          description: Фильтр по конкретному зданию.
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: OK — список организаций получен.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListOrganizationsResponse'
+        '400':
+          description: Validation Error — входные данные не прошли валидацию.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '500':
+          description: Internal Server Error — непредвиденная ошибка на сервере.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - apiKeyAuth: [ ]
 
 components:
   securitySchemes:
@@ -312,3 +361,11 @@ components:
       properties:
         organization:
           $ref: '#/components/schemas/Organization'
+    ListOrganizationsResponse:
+      type: object
+      required: [ organizations ]
+      properties:
+        organizations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Organization'

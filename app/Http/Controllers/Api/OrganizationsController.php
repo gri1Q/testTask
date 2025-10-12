@@ -9,9 +9,11 @@ use App\Services\OrganizationService;
 use Generated\DTO\Activity as GeneratedActivity;
 use Generated\DTO\Error;
 use Generated\DTO\ListOrganizationsInBuildingResponse;
+use Generated\DTO\ListOrganizationsResponse as GeneratedListOrganizationsResponse;
 use Generated\DTO\NoContent404;
 use Generated\DTO\Organization as GeneratedOrganization;
 use Generated\DTO\OrganizationResponse as GeneratedOrganizationResponse;
+use Generated\DTO\ValidationError;
 use Generated\Http\Controllers\OrganizationsApiInterface;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Throwable;
@@ -68,6 +70,35 @@ class OrganizationsController extends Controller implements OrganizationsApiInte
     }
 
     /**
+     * Фильтрация и поиск организаций.
+     */
+    public function listOrganizations(
+        ?string $name = null,
+        ?int $activityID = null,
+        ?int $buildingID = null,
+    ): GeneratedListOrganizationsResponse|ValidationError|Error {
+        try {
+            $result = $this->organizationService->filterOrganizations(
+                $name,
+                $activityID,
+                $buildingID,
+            );
+        } catch (Throwable $e) {
+            report($e);
+            return new Error('Что то пошло не так');
+        }
+
+        $organizations = array_map(
+            fn(OrganizationItem $item): GeneratedOrganization => $this->makeTransportOrganization($item),
+            $result->organizations,
+        );
+
+        return new GeneratedListOrganizationsResponse(
+            $organizations
+        );
+    }
+
+    /**
      * Преобразовать DTO сервиса в транспортный объект Organization.
      *
      * @param OrganizationItem $item
@@ -93,6 +124,10 @@ class OrganizationsController extends Controller implements OrganizationsApiInte
         );
     }
 
+    /**
+     * @param ActivityItem $a
+     * @return GeneratedActivity
+     */
     private function makeTransportActivity(ActivityItem $a): GeneratedActivity
     {
         return new GeneratedActivity(

@@ -28,22 +28,22 @@ class OrganizationService
     /**
      * Получить список организаций в конкретном здании, включая их телефоны и виды деятельности.
      *
-     * @param int $buildingId
+     * @param int $buildingID
      * @return ListOrganizationsInBuildingResult|Collection
      */
-    public function listOrganizationsInBuilding(int $buildingId): ListOrganizationsInBuildingResult|Collection
+    public function listOrganizationsInBuilding(int $buildingID): ListOrganizationsInBuildingResult|Collection
     {
-        $this->buildingService->first($buildingId);
+        $this->buildingService->first($buildingID);
 
-        $organizations = $this->getOrganizationsByBuilding($buildingId);
+        $organizations = $this->getOrganizationsByBuilding($buildingID);
         if ($organizations->isEmpty()) {
             return collect();
         }
 
-        $organizationIds = $organizations->pluck('id')->all();
+        $organizationIDs = $organizations->pluck('id')->all();
 
-        $phonesByOrg = $this->getPhonesGroupedByOrganization($organizationIds);
-        $activitiesByOrg = $this->getActivitiesGroupedByOrganization($organizationIds);
+        $phonesByOrg = $this->getPhonesGroupedByOrganization($organizationIDs);
+        $activitiesByOrg = $this->getActivitiesGroupedByOrganization($organizationIDs);
 
         $items = $organizations->map(function ($org) use ($phonesByOrg, $activitiesByOrg) {
             $phones = $phonesByOrg[$org->id] ?? [];
@@ -68,12 +68,12 @@ class OrganizationService
     /**
      * Получить одну организацию по её идентификатору, включая телефоны и виды деятельности.
      *
-     * @param int $organizationId
+     * @param int $organizationID
      * @return OrganizationItem
      */
-    public function getOrganization(int $organizationId): OrganizationItem
+    public function getOrganization(int $organizationID): OrganizationItem
     {
-        $organization = $this->organizationRepository->first($organizationId) ?? null;
+        $organization = $this->organizationRepository->first($organizationID) ?? null;
 
         $phones = $this->organizationPhoneRepository
             ->getPhonesByOrganizationIDs([$organization->id])
@@ -82,12 +82,12 @@ class OrganizationService
             ->all();
 
         $links = $this->organizationActivityRepository->getOrganizationActivityByOrganizationIDs([$organization->id]);
-        $activityIds = $links->pluck('activity_id')->unique()->values()->all();
+        $activityIDs = $links->pluck('activity_id')->unique()->values()->all();
 
         $activities = collect();
-        if (!empty($activityIds)) {
+        if (!empty($activityIDs)) {
             $activities = $this->activityService
-                ->getByIDs($activityIds)
+                ->getByIDs($activityIDs)
                 ->map(fn($act) => new ActivityItem(
                     $act->id,
                     $act->name,
@@ -111,26 +111,75 @@ class OrganizationService
     }
 
     /**
+     * @param string|null $name
+     * @param int|null $activityID
+     * @param int|null $buildingID
+     * @return ListOrganizationsInBuildingResult|Collection
+     */
+    public function filterOrganizations(
+        ?string $name = null,
+        ?int $activityID = null,
+        ?int $buildingID = null,
+    ): ListOrganizationsInBuildingResult {
+        $buildingIDs = null;
+        if ($buildingID !== null) {
+            $this->buildingService->first($buildingID);
+            $buildingIDs = [$buildingID];
+        }
+        $organizations = $this->organizationRepository->filter(
+            $name,
+            $buildingIDs,
+            $activityID,
+        );
+
+        if ($organizations->isEmpty()) {
+            return new ListOrganizationsInBuildingResult([]);
+        }
+
+        $organizationIDs = $organizations->pluck('id')->all();
+        $phonesByOrg = $this->getPhonesGroupedByOrganization($organizationIDs);
+        $activitiesByOrg = $this->getActivitiesGroupedByOrganization($organizationIDs);
+
+        $items = $organizations->map(function ($org) use ($phonesByOrg, $activitiesByOrg) {
+            $phones = $phonesByOrg[$org->id] ?? [];
+            $activities = $activitiesByOrg[$org->id] ?? [];
+
+            return new OrganizationItem(
+                organizationID: $org->id,
+                name: $org->name,
+                buildingID: $org->building_id,
+                description: $org->description,
+                email: $org->email,
+                phones: $phones,
+                activities: $activities,
+                createdAt: $org->created_at,
+                updatedAt: $org->updated_at,
+            );
+        })->all();
+
+        return new ListOrganizationsInBuildingResult($items);
+    }
+    /**
      * Получить список организаций по ID здания.
      *
-     * @param int $buildingId
+     * @param int $buildingID
      * @return Collection
      */
-    private function getOrganizationsByBuilding(int $buildingId): Collection
+    private function getOrganizationsByBuilding(int $buildingID): Collection
     {
-        return $this->organizationRepository->listByBuildingID($buildingId);
+        return $this->organizationRepository->listByBuildingID($buildingID);
     }
 
     /**
      * Получить телефоны организаций и сгруппировать их по ID организации.
      *
-     * @param array $organizationIds
+     * @param array $organizationIDs
      * @return array
      */
-    private function getPhonesGroupedByOrganization(array $organizationIds): array
+    private function getPhonesGroupedByOrganization(array $organizationIDs): array
     {
         return $this->organizationPhoneRepository
-            ->getPhonesByOrganizationIDs($organizationIds)
+            ->getPhonesByOrganizationIDs($organizationIDs)
             ->groupBy('organization_id')
             ->map(fn($group) => $group->pluck('phone')->values()->all())
             ->toArray();
@@ -140,26 +189,26 @@ class OrganizationService
     /**
      * Получить виды деятельности организаций и сгруппировать их по ID организации.
      *
-     * @param array $organizationIds
+     * @param array $organizationIDs
      * @return array
      */
-    private function getActivitiesGroupedByOrganization(array $organizationIds): array
+    private function getActivitiesGroupedByOrganization(array $organizationIDs): array
     {
-        $links = $this->organizationActivityRepository->getOrganizationActivityByOrganizationIDs($organizationIds);
-        $activityIds = $links->pluck('activity_id')->unique()->values()->all();
-        $activities = $this->activityService->getByIDs($activityIds)->keyBy('id');
+        $links = $this->organizationActivityRepository->getOrganizationActivityByOrganizationIDs($organizationIDs);
+        $activityIDs = $links->pluck('activity_id')->unique()->values()->all();
+        $activities = $this->activityService->getByIDs($activityIDs)->keyBy('id');
 
         $byOrg = [];
         foreach ($links as $link) {
-            $actId = $link->activity_id;
-            if ($activities->has($actId)) {
-                $act = $activities->get($actId);
+            $actID = $link->activity_id;
+            if ($activities->has($actID)) {
+                $act = $activities->get($actID);
                 $byOrg[$link->organization_id][] = new ActivityItem($act->id, $act->name, $act->level, $act->parent_id);
             }
         }
 
-        foreach ($byOrg as $orgId => $list) {
-            $byOrg[$orgId] = array_values($list);
+        foreach ($byOrg as $orgID => $list) {
+            $byOrg[$orgID] = array_values($list);
         }
 
         return $byOrg;

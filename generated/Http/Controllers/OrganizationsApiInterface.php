@@ -41,6 +41,26 @@ interface OrganizationsApiInterface {
 
 
     /**
+     * Operation listOrganizations
+     *
+     * Фильтрация и поиск организаций
+     * @param null | string $name
+     * @param null | int $activityID
+     * @param null | int $buildingID
+     * @return \Generated\DTO\ListOrganizationsResponse | \Generated\DTO\ValidationError | \Generated\DTO\Error
+     */
+    public function listOrganizations(
+            ?string $name,
+            ?int $activityID,
+            ?int $buildingID,
+    ):
+        \Generated\DTO\ListOrganizationsResponse | 
+        \Generated\DTO\ValidationError | 
+        \Generated\DTO\Error
+    ;
+
+
+    /**
      * Operation listOrganizationsInBuilding
      *
      * Получить список организаций в здании

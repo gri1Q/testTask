@@ -93,6 +93,72 @@ class OrganizationsController extends Controller
         return response()->abort(500);
     }
     /**
+     * Operation listOrganizations
+     *
+     * Фильтрация и поиск организаций.
+     *
+     */
+    public function listOrganizations(Request $request): JsonResponse
+    {
+        $validator = Validator::make(
+            array_merge(
+                [
+
+                ],
+                $request->all(),
+            ),
+            [
+                'name' => [
+                    'min:2',
+                    'max:255',
+                    'string',
+                ],
+                'activityID' => [
+                    'gte:1',
+                    'integer',
+                ],
+                'buildingID' => [
+                    'gte:1',
+                    'integer',
+                ],
+            ],
+        );
+
+        if ($validator->fails()) {
+            return response()->json(['error' => 'Invalid input'], 400);
+        }
+
+        $name = $request->string('name')->value();
+
+        $activityID = $request->integer('activityID');
+
+        $buildingID = $request->integer('buildingID');
+
+        try {
+            $apiResult = $this->api->listOrganizations($name, $activityID, $buildingID);
+        } catch (\Exception $exception) {
+            // This shouldn't happen
+            report($exception);
+            return response()->json(['error' => $exception->getMessage()], 500);
+        }
+
+        if ($apiResult instanceof \Generated\DTO\ListOrganizationsResponse) {
+            return response()->json($this->serde->serialize($apiResult, format: 'array'), 200);
+        }
+
+        if ($apiResult instanceof \Generated\DTO\ValidationError) {
+            return response()->json($this->serde->serialize($apiResult, format: 'array'), 400);
+        }
+
+        if ($apiResult instanceof \Generated\DTO\Error) {
+            return response()->json($this->serde->serialize($apiResult, format: 'array'), 500);
+        }
+
+
+        // This shouldn't happen
+        return response()->abort(500);
+    }
+    /**
      * Operation listOrganizationsInBuilding
      *
      * Получить список организаций в здании.

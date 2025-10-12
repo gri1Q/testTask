@@ -5,6 +5,7 @@ DTO/Error.php
 DTO/GetBuildingResponse.php
 DTO/ListBuildingsResponse.php
 DTO/ListOrganizationsInBuildingResponse.php
+DTO/ListOrganizationsResponse.php
 DTO/NoContent404.php
 DTO/Organization.php
 DTO/OrganizationResponse.php

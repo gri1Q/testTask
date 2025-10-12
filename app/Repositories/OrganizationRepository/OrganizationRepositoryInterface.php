@@ -16,8 +16,16 @@ interface OrganizationRepositoryInterface
     /**
      * Получить организации по ID здания.
      *
-     * @param int $buildingId
+     * @param int $buildingID
      * @return Collection
      */
-    public function listByBuildingID(int $buildingId): Collection;
+    public function listByBuildingID(int $buildingID): Collection;
+
+    /**
+     * @param string|null $name
+     * @param array|null $buildingIDs
+     * @param int|null $activityID
+     * @return Collection
+     */
+    public function filter(?string $name, ?array $buildingIDs, ?int $activityID): Collection;
 }

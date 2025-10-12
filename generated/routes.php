@@ -48,6 +48,15 @@ Route::GET('/api/organizations/{id}', [\Generated\Http\Controllers\Organizations
 ->name('');
 
 /**
+ * GET listOrganizations
+ * Summary: Фильтрация и поиск организаций
+ * Notes: Возвращает список организаций по заданным фильтрам. Если указан &#x60;activityID&#x60;, по умолчанию включаются дочерние активности до 3 уровня вложенности.
+ */
+Route::GET('/api/organizations', [\Generated\Http\Controllers\OrganizationsController::class, 'listOrganizations'])
+    ->middleware('api.key')
+->name('');
+
+/**
  * GET listOrganizationsInBuilding
  * Summary: Получить список организаций в здании
  * Notes: Возвращает список организаций, зарегистрированных в указанном здании.

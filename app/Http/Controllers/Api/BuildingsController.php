@@ -13,12 +13,9 @@ use Generated\DTO\GetBuildingResponse as GeneratedGetBuildingResponse;
 use Generated\DTO\ListBuildingsResponse as GeneratedListBuildingsResponse;
 use Generated\DTO\NoContent404;
 use Generated\DTO\ValidationError;
-use Generated\DTO\ValidationErrorItem;
 use Generated\Http\Controllers\BuildingsApiInterface;
-use Illuminate\Contracts\Validation\Validator as ValidatorContract;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Context;
-use Illuminate\Support\Facades\Validator;
 use Throwable;
 
 /**
@@ -98,41 +95,4 @@ class BuildingsController extends Controller implements BuildingsApiInterface
         );
     }
 
-
-    /**
-     * Валидирует данные и возвращает ошибку или null.
-     *
-     * @param array $data
-     * @param array $rules
-     * @param array $messages
-     * @return ValidationError|null
-     */
-    private function validateOrNull(array $data, array $rules, array $messages = []): ?ValidationError
-    {
-        $validator = Validator::make($data, $rules, $messages);
-        if ($validator->fails()) {
-            return $this->makeValidationError($validator);
-        }
-
-        return null;
-    }
-
-
-    /**
-     * Сформировать объект ошибки валидации из валидатора Laravel.
-     *
-     * @param ValidatorContract $validator
-     * @return ValidationError
-     */
-    private function makeValidationError(ValidatorContract $validator): ValidationError
-    {
-        $errorItems = [];
-        foreach ($validator->errors()->toArray() as $field => $messages) {
-            foreach ($messages as $message) {
-                $errorItems[] = new ValidationErrorItem($message, $field);
-            }
-        }
-
-        return new ValidationError(null, $errorItems);
-    }
 }
