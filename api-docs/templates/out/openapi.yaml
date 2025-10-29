@@ -2,378 +2,226 @@ openapi: 3.0.3
 info:
   title: Foo API
   version: 1.0.0
-  description: |
-    HTTP API для управления балансами пользователей.
-    Функционал: депозит, списание, перевод, получение баланса.
-    Все ответы и ошибки в JSON. Денежные операции атомарны (в транзакциях БД).
-servers:
-  - url: http://localhost:8080
-    description: Local (Docker)
-
-tags:
-  - name: Balance
-    description: Получение текущего баланса пользователя
-  - name: Transactions
-    description: Денежные операции (депозит, списание, перевод)
-
+  description: A validation-focused OpenAPI schema for the Foo object, including file uploads.
 paths:
-  /api/deposit:
-    post:
-      tags: [Transactions]
-      summary: Начисление средств пользователю
-      description: Создаёт транзакцию с типом `deposit` и увеличивает баланс пользователя.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/DepositRequest'
-            examples:
-              default:
-                value:
-                  user_id: 1
-                  amount: "500.00"
-                  comment: "Пополнение через карту"
-      responses:
-        200:
-          description: Успешное начисление
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TransactionResult'
-        400:
-          $ref: '#/components/responses/BadRequest'
-        422:
-          $ref: '#/components/responses/UnprocessableEntity'
-        404:
-          $ref: '#/components/responses/NotFound'
-        409:
-          $ref: '#/components/responses/Conflict'
-
-  /api/withdraw:
-    post:
-      tags: [Transactions]
-      summary: Списание средств
-      description: Создаёт транзакцию с типом `withdraw` и уменьшает баланс. Баланс не может стать отрицательным.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/WithdrawRequest'
-            examples:
-              default:
-                value:
-                  user_id: 1
-                  amount: "200.00"
-                  comment: "Покупка подписки"
-      responses:
-        200:
-          description: Успешное списание
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TransactionResult'
-        400:
-          $ref: '#/components/responses/BadRequest'
-        422:
-          $ref: '#/components/responses/UnprocessableEntity'
-        404:
-          $ref: '#/components/responses/NotFound'
-        409:
-          $ref: '#/components/responses/Conflict'
-
-  /api/transfer:
-    post:
-      tags: [Transactions]
-      summary: Перевод между пользователями
-      description: |
-        Переводит средства от пользователя `from_user_id` к `to_user_id`.
-        Создаются две транзакции: `transfer_out` у отправителя и `transfer_in` у получателя.
-        Баланс отправителя не может стать отрицательным.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TransferRequest'
-            examples:
-              default:
-                value:
-                  from_user_id: 1
-                  to_user_id: 2
-                  amount: "150.00"
-                  comment: "Перевод другу"
-      responses:
-        200:
-          description: Успешный перевод
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TransferResult'
-        400:
-          $ref: '#/components/responses/BadRequest'
-        422:
-          $ref: '#/components/responses/UnprocessableEntity'
-        404:
-          $ref: '#/components/responses/NotFound'
-        409:
-          $ref: '#/components/responses/Conflict'
-
-  /api/balance/{user_id}:
+  /foos:
     get:
-      tags: [Balance]
-      summary: Получение баланса пользователя
+      summary: Get a list of Foo objects
+      description: Retrieves a paginated list of Foo objects based on query parameters.
       parameters:
-        - $ref: '#/components/parameters/UserIdPath'
+        - name: page
+          in: query
+          description: The page number to retrieve.
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+        - name: pageSize
+          in: query
+          description: Number of items per page.
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+        - name: filter
+          in: query
+          description: Filter results based on a specific field.
+          required: false
+          schema:
+            type: string
       responses:
         200:
-          description: Текущий баланс пользователя
+          description: A list of Foo objects.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BalanceResponse'
-              examples:
-                default:
-                  value:
-                    user_id: 1
-                    balance: "350.00"
-        404:
-          $ref: '#/components/responses/NotFound'
-
-  /api/users/{user_id}/transactions:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Foo'
+        429:
+          description: Too many requests.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message.
+                  retryAfter:
+                    type: integer
+                    description: Number of seconds to wait before retrying.
+      tags:
+        - FooIndex
+    post:
+      summary: Create a new Foo object
+      description: Adds a new Foo object to the system.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Foo'
+      responses:
+        201:
+          description: Foo object created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Foo'
+      tags:
+        - FooCreate
+  /foos/upload:
+    post:
+      summary: Upload a file
+      description: Uploads a file to associate it with a Foo object.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: The file to upload.
+                description:
+                  type: string
+                  description: A description of the uploaded file.
+                  maxLength: 255
+              required:
+                - file
+      tags:
+        - FooFileUpload
+      responses:
+        200:
+          description: File uploaded successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Confirmation message.
+                  fileName:
+                    type: string
+                    description: Name of the uploaded file.
+                  size:
+                    type: integer
+                    description: Size of the uploaded file in bytes.
+  /foos/{id}:
     get:
-      tags: [Transactions]
-      summary: История транзакций пользователя
-      description: Возвращает постраничный список транзакций пользователя по убыванию даты.
+      summary: Get a single Foo object
+      description: Retrieves the details of a Foo object by its ID.
       parameters:
-        - $ref: '#/components/parameters/UserIdPath'
-        - in: query
-          name: page
-          required: false
-          schema: { type: integer, minimum: 1, default: 1 }
-        - in: query
-          name: pageSize
-          required: false
-          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+        - name: id
+          in: path
+          description: The ID of the Foo object to retrieve.
+          required: true
+          schema:
+            type: integer
+            minimum: 1
       responses:
         200:
-          description: Список транзакций
+          description: Details of the Foo object.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TransactionPage'
-        404:
-          $ref: '#/components/responses/NotFound'
+                $ref: '#/components/schemas/Foo'
+      tags:
+        - FooGet
+    put:
+      summary: Update an existing Foo object
+      description: Updates the details of an existing Foo object.
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the Foo object to update.
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Foo'
+      responses:
+        200:
+          description: Foo object updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Foo'
+      tags:
+        - FooUpdate
+    delete:
+      summary: Delete a Foo object
+      description: Deletes a Foo object by its ID.
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the Foo object to delete.
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        204:
+          description: Foo object deleted successfully.
+      tags:
+        - FooDelete
 
 components:
-  parameters:
-    UserIdPath:
-      name: user_id
-      in: path
-      required: true
-      description: Идентификатор пользователя
-      schema:
-        type: integer
-        minimum: 1
-
   schemas:
-    Money:
-      type: string
-      description: Денежная сумма с двумя знаками после запятой
-      pattern: '^[0-9]+(\.[0-9]{1,2})?$'
-      example: "500.00"
-
-    Error:
+    Foo:
       type: object
-      required: [message]
-      properties:
-        message:
-          type: string
-          description: Человеко-читаемое описание ошибки
-        code:
-          type: string
-          description: Короткий код ошибки (например, VALIDATION_ERROR, NOT_FOUND, CONFLICT)
-        details:
-          type: object
-          description: Полезные детали (например, ошибки полей)
-          additionalProperties: true
-
-    TransactionType:
-      type: string
-      enum: [deposit, withdraw, transfer_in, transfer_out]
-      description: Статус/тип транзакции
-
-    Transaction:
-      type: object
-      required: [id, user_id, type, amount, created_at]
       properties:
         id:
           type: integer
+          format: int32
+          description: Unique identifier for the Foo object.
           minimum: 1
-          description: Идентификатор транзакции
-        user_id:
-          type: integer
-          minimum: 1
-        type:
-          $ref: '#/components/schemas/TransactionType'
-        amount:
-          $ref: '#/components/schemas/Money'
-        comment:
+        name:
           type: string
+          description: The name of the Foo object.
+          minLength: 1
           maxLength: 255
-          nullable: true
-        related_user_id:
-          type: integer
-          minimum: 1
-          nullable: true
-          description: В переводах — вторая сторона операции
-        created_at:
+        isActive:
+          type: boolean
+          description: Indicates if the Foo object is active.
+        price:
+          type: number
+          format: float
+          description: The price of the Foo object.
+          minimum: 0.0
+        createdAt:
           type: string
           format: date-time
-
-    DepositRequest:
-      type: object
-      required: [user_id, amount]
-      properties:
-        user_id:
-          type: integer
-          minimum: 1
-        amount:
-          $ref: '#/components/schemas/Money'
-        comment:
-          type: string
-          maxLength: 255
-          nullable: true
-
-    WithdrawRequest:
-      type: object
-      required: [user_id, amount]
-      properties:
-        user_id:
-          type: integer
-          minimum: 1
-        amount:
-          $ref: '#/components/schemas/Money'
-        comment:
-          type: string
-          maxLength: 255
-          nullable: true
-
-    TransferRequest:
-      type: object
-      required: [from_user_id, to_user_id, amount]
-      properties:
-        from_user_id:
-          type: integer
-          minimum: 1
-        to_user_id:
-          type: integer
-          minimum: 1
-        amount:
-          $ref: '#/components/schemas/Money'
-        comment:
-          type: string
-          maxLength: 255
-          nullable: true
-
-    TransactionResult:
-      type: object
-      description: Результат единичной операции (депозит/списание)
-      properties:
-        transaction:
-          $ref: '#/components/schemas/Transaction'
-        balance:
-          $ref: '#/components/schemas/Money'
-      required: [transaction, balance]
-
-    TransferResult:
-      type: object
-      description: Результат перевода между пользователями
-      properties:
-        from_transaction:
-          $ref: '#/components/schemas/Transaction'
-        to_transaction:
-          $ref: '#/components/schemas/Transaction'
-        from_user_balance:
-          $ref: '#/components/schemas/Money'
-        to_user_balance:
-          $ref: '#/components/schemas/Money'
-      required: [from_transaction, to_transaction, from_user_balance, to_user_balance]
-
-    BalanceResponse:
-      type: object
-      required: [user_id, balance]
-      properties:
-        user_id:
-          type: integer
-          minimum: 1
-        balance:
-          $ref: '#/components/schemas/Money'
-
-    TransactionPage:
-      type: object
-      required: [data, page, pageSize, total]
-      properties:
-        data:
+          description: Timestamp when the Foo object was created.
+        metadata:
+          type: object
+          description: Additional metadata for the Foo object.
+          additionalProperties:
+            type: string
+        tags:
           type: array
+          description: Tags associated with the Foo object.
           items:
-            $ref: '#/components/schemas/Transaction'
-        page:
-          type: integer
-          minimum: 1
-        pageSize:
-          type: integer
-          minimum: 1
-          maximum: 100
-        total:
-          type: integer
-          minimum: 0
-
-  responses:
-    BadRequest:
-      description: Ошибка запроса (например, неверный JSON)
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-          examples:
-            bad_json:
-              value:
-                message: Неверный формат запроса
-                code: BAD_REQUEST
-    UnprocessableEntity:
-      description: Ошибки валидации входных данных
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-          examples:
-            validation:
-              value:
-                message: Ошибка валидации
-                code: VALIDATION_ERROR
-                details:
-                  amount: ["Значение должно быть положительным и с точностью до копеек"]
-    NotFound:
-      description: Пользователь не найден
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-          examples:
-            user_not_found:
-              value:
-                message: Пользователь не найден
-                code: NOT_FOUND
-    Conflict:
-      description: Конфликт (например, недостаточно средств)
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-          examples:
-            insufficient_funds:
-              value:
-                message: Недостаточно средств
-                code: INSUFFICIENT_FUNDS
+            type: string
+            minLength: 1
+        category:
+          type: string
+          description: The category of the Foo object.
+          enum:
+            - basic
+            - premium
+            - enterprise
+      required:
+        - id
+        - name
+        - isActive
